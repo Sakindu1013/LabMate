@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="user_roles">
+        <item>Undergraduate Student</item>
+        <item>External Student</item>
+        <item>Academic Staff</item>
+        <item>Non-Academic Staff</item>
+    </string-array>
+
+    <string-array name="lab_locations">
+        <item>Third Floor</item>
+        <item>Second Floor</item>
+        <item>First Floor</item>
+        <item>Ground Floor</item>
+    </string-array>
+
+    <string-array name="equipment_states">
+        <item>In Lab</item>
+        <item>Borrowed</item>
+        <item>Under Maintenance</item>
+        <item>Removed</item>
+    </string-array>
+
+    <string-array name="equipment_types">
+        <item>Multimeter</item>
+        <item>Digital Storage Oscilloscope</item>
+        <item>Function Generator</item>
+        <item>DC Power Supply</item>
+    </string-array>
+</resources>

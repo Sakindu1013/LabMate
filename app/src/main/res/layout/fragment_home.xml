@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/physics_lab_equipment_overview"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"/>
+
+        <!-- User Role -->
+        <TextView
+            android:id="@+id/tvRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Request Equipment -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/equipment_request"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/request_equipment"
+            android:textSize="16sp"
+            app:cornerRadius="14dp"
+            android:backgroundTint="@color/button_primary"
+            android:textColor="@color/button_text"/>
+
+        <!-- Return Equipment -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/equipment_return"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/return_equipment"
+            android:textSize="16sp"
+            app:cornerRadius="14dp"
+            android:backgroundTint="@color/button_primary"
+            android:textColor="@color/button_text"/>
+
+        <!-- Admin Manage Inventory -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/manage_inventory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/inventory_manage"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/primary"
+            android:backgroundTint="@color/button_secondary"
+            android:textColor="@color/primary"/>
+
+        <!-- Admin Manage Users -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/manage_users"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/manage_users"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/primary"
+            android:backgroundTint="@color/button_secondary"
+            android:textColor="@color/primary"/>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="Home">
+
+    </item>
+
+    <item
+        android:id="@+id/nav_lab"
+        android:icon="@drawable/ic_labs"
+        android:title="LABs">
+
+    </item>
+
+    <item
+        android:id="@+id/nav_equipment"
+        android:icon="@drawable/ic_equipment"
+        android:title="Equipment">
+
+    </item>
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile">
+
+    </item>
+
+</menu>

@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.LabMate"
+        parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnSurface">@color/text_on_primary</item>
+
+        <!-- Status bar background -->
+        <item name="android:statusBarColor">@color/primary_light</item>
+
+        <!-- IMPORTANT: makes icons dark -->
+        <item name="android:windowLightStatusBar">true</item>
+
+    </style>
+
+    <style name="Theme.LabMate" parent="Base.Theme.LabMate" />
+
+</resources>

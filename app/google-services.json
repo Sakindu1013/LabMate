@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "704691074282",
+    "project_id": "labmate-41769",
+    "storage_bucket": "labmate-41769.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:704691074282:android:a6c23645a259022cc05393",
+        "android_client_info": {
+          "package_name": "com.example.labmate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "704691074282-diuqsgoj826m3rm154tm8hmrhmmp6ois.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.labmate",
+            "certificate_hash": "8bd67e526e00bb2d70f682d65bcca076221295e4"
+          }
+        },
+        {
+          "client_id": "704691074282-0o8j59kt4s1q28o2uv1360hj17ghidmm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnOhFy2SUvbIsvAuqNSPftmjSEjjJMBHg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "704691074282-0o8j59kt4s1q28o2uv1360hj17ghidmm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
