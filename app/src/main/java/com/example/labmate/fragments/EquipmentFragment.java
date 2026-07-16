@@ -25,11 +25,11 @@ import java.util.HashMap;
 
 public class EquipmentFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    ArrayList<EquipmentSummary> equipmentSummaryList;
-    EquipmentSummaryAdapter adapter;
-    FirebaseFirestore db;
-    Button buttonAddEquip;
+    private RecyclerView recyclerView;
+    private ArrayList<EquipmentSummary> equipmentSummaryList;
+    private EquipmentSummaryAdapter adapter;
+    private FirebaseFirestore db;
+    private Button buttonAddEquip;
 
     public EquipmentFragment() {
 
@@ -119,6 +119,8 @@ public class EquipmentFragment extends Fragment {
                     }
 
                     equipmentSummaryList.addAll(map.values());
+                    equipmentSummaryList.sort((a,b) ->
+                            a.getType().compareToIgnoreCase(b.getType()));
                     adapter.notifyDataSetChanged();
                 });
     }
