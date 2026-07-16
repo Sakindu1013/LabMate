@@ -25,11 +25,11 @@ import java.util.ArrayList;
 
 public class LabsFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    ArrayList<Lab> labList;
-    LabAdapter adapter;
-    FirebaseFirestore db;
-    Button buttonAddLab;
+    private RecyclerView recyclerView;
+    private ArrayList<Lab> labList;
+    private LabAdapter adapter;
+    private FirebaseFirestore db;
+    private Button buttonAddLab;
 
     public LabsFragment() {
 
@@ -79,9 +79,11 @@ public class LabsFragment extends Fragment {
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots){
 
-                        Lab lab = new Lab(doc.getId(), doc.getString("labName"), doc.getString("personInCharge"), doc.getString("location"));
+                        Lab lab = new Lab(doc.getString("labName"), doc.getString("personInCharge"), doc.getString("location"));
                         labList.add(lab);
                     }
+                    labList.sort((a,b) ->
+                            a.getName().compareToIgnoreCase(b.getName()));
                     adapter.notifyDataSetChanged();
                 });
     }

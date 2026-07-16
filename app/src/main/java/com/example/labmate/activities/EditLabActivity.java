@@ -13,17 +13,18 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class EditLabActivity extends AppCompatActivity {
 
-    EditText editName;
-    EditText editInCharge;
-    AutoCompleteTextView editLocation;
-    Button editLab;
-    Button deleteLab;
-    FirebaseFirestore db;
+    private EditText editName;
+    private EditText editInCharge;
+    private AutoCompleteTextView editLocation;
+    private Button editLab;
+    private Button deleteLab;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,17 +90,28 @@ public class EditLabActivity extends AppCompatActivity {
         });
 
         deleteLab.setOnClickListener(v -> {
+            new MaterialAlertDialogBuilder(EditLabActivity.this)
+                    .setTitle("Confirm Delete")
+                    .setMessage("Do you want to delete this laboratory?")
+                    .setCancelable(false)
+                    .setPositiveButton("Delete", (dialog, which) -> {
 
-            db.collection("labs")
-                    .document(labId)
-                    .delete()
-                    .addOnSuccessListener(unused -> {
-                        Toast.makeText(getApplicationContext(), "Lab Deleted Successfully", Toast.LENGTH_SHORT).show();
-                        finish();
+                        db.collection("labs")
+                                .document(labId)
+                                .delete()
+                                .addOnSuccessListener(unused -> {
+                                    Toast.makeText(getApplicationContext(), "Lab Deleted Successfully", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+
                     })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss();
+                    })
+                    .show();
         });
     }
 }

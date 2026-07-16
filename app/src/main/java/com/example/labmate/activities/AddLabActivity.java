@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -61,10 +62,20 @@ public class AddLabActivity extends AppCompatActivity {
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new MaterialAlertDialogBuilder(AddLabActivity.this)
+                        .setTitle("Clear Form")
+                        .setMessage("Do you want to clear the form?")
+                        .setCancelable(false)
+                        .setPositiveButton("Clear", (dialog, which) -> {
 
-                labName.setText("");
-                personInCharge.setText("");
-                locationDropdown.setText(null);
+                            labName.setText("");
+                            personInCharge.setText("");
+                            locationDropdown.setText(null);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            dialog.dismiss();
+                        })
+                        .show();
             }
         });
 

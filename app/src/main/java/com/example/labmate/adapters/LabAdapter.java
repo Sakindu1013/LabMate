@@ -53,7 +53,6 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
 
         holder.itemView.setOnClickListener(v -> {
             Intent labIntent = new Intent(context, LabDetailsActivity.class);
-            labIntent.putExtra("LAB_ID", lab.getId());
             labIntent.putExtra("LAB_NAME", lab.getName());
             labIntent.putExtra("LAB_IN_CHARGE", lab.getInCharge());
             labIntent.putExtra("LAB_LOCATION", lab.getLocation());
@@ -62,7 +61,7 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
 
         holder.edit.setOnClickListener(v -> {
             Intent editIntent = new Intent(context, EditLabActivity.class);
-            editIntent.putExtra("LAB_ID", lab.getId());
+
             editIntent.putExtra("LAB_NAME", lab.getName());
             editIntent.putExtra("LAB_IN_CHARGE", lab.getInCharge());
             editIntent.putExtra("LAB_LOCATION", lab.getLocation());
