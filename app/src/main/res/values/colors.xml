@@ -10,12 +10,18 @@
     <color name="surface">#FFFFFFFF</color>
     <color name="surface_alt">#FFEFF3F9</color>
 
-    <!-- Primary Theme (Trust / Academic Blue) -->
+    <!-- Primary Theme -->
     <color name="primary">#FF2563EB</color>
     <color name="primary_dark">#FF1E40AF</color>
     <color name="primary_light">#FF93C5FD</color>
 
-    <!-- Accent (Controlled Energy Color) -->
+    <!-- Equipment Status -->
+    <color name="in_lab">#FF10B981</color>
+    <color name="maintenance">#FFF59E0B</color>
+    <color name="borrowed">#FF2563EB</color>
+    <color name="removed">#FFEF4444</color>
+
+    !-- Energy Color -->
     <color name="accent">#FF10B981</color>
     <color name="warning">#FFF59E0B</color>
     <color name="danger">#FFEF4444</color>

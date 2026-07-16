@@ -15,21 +15,19 @@ import android.widget.Button;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.AddEquipmentActivity;
-import com.example.labmate.activities.AddLabActivity;
-import com.example.labmate.adapters.EquipmentAdapter;
-import com.example.labmate.adapters.LabAdapter;
-import com.example.labmate.models.Equipment;
-import com.example.labmate.models.Lab;
+import com.example.labmate.adapters.EquipmentSummaryAdapter;
+import com.example.labmate.models.EquipmentSummary;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class EquipmentFragment extends Fragment {
 
     RecyclerView recyclerView;
-    ArrayList<Equipment> equipmentList;
-    EquipmentAdapter adapter;
+    ArrayList<EquipmentSummary> equipmentSummaryList;
+    EquipmentSummaryAdapter adapter;
     FirebaseFirestore db;
     Button buttonAddEquip;
 
@@ -62,29 +60,65 @@ public class EquipmentFragment extends Fragment {
         recyclerView = view.findViewById(R.id.labRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        equipmentList = new ArrayList<>();
-        adapter = new EquipmentAdapter(getContext(), equipmentList, isAdmin);
+        equipmentSummaryList = new ArrayList<>();
+        adapter = new EquipmentSummaryAdapter(getContext(), equipmentSummaryList);
 
         recyclerView.setAdapter(adapter);
         db = FirebaseFirestore.getInstance();
 
-        loadLabs();
+        loadEquipmentSummary();
 
         return view;
     }
 
-    public void loadLabs(){
+    public void loadEquipmentSummary(){
 
         db.collection("equipments")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    equipmentList.clear();
+
+                    equipmentSummaryList.clear();
+
+                    HashMap<String, EquipmentSummary> map = new HashMap<>();
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots){
 
-                        Equipment equipment = new Equipment(doc.getId(), doc.getString("equipmentName"), doc.getString("equipmentModel"), doc.getString("lab"), doc.getString("state"), doc.getString("type"));
-                        equipmentList.add(equipment);
+                        String type = doc.getString("type");
+                        String state = doc.getString("state");
+
+                        if (type == null) continue;
+
+                        EquipmentSummary summary = map.get(type);
+
+                        if (summary == null){
+                            summary = new EquipmentSummary(type);
+                            map.put(type, summary);
+                        }
+
+                        summary.increaseTotal();
+
+                        if (state == null) continue;
+
+                        switch (state){
+                            case "In Lab":
+                                summary.increaseInLab();
+                                break;
+
+                            case "Borrowed":
+                                summary.increaseBorrowed();
+                                break;
+
+                            case "Under Maintenance":
+                                summary.increaseMaintenance();
+                                break;
+
+                            case "Removed":
+                                summary.increaseRemoved();
+                                break;
+                        }
                     }
+
+                    equipmentSummaryList.addAll(map.values());
                     adapter.notifyDataSetChanged();
                 });
     }

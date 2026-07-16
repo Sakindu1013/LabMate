@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LabMate" >
         <activity
-            android:name=".EditEquipmentActivity"
+            android:name=".activities.EditEquipmentActivity"
             android:exported="false" />
         <activity
             android:name=".activities.EquipmentDetailsActivity"
