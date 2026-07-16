@@ -140,7 +140,7 @@
 
             <!-- Add Lab Button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_add_lab"
+                android:id="@+id/btn_add_equipment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_equipment"
@@ -151,6 +151,16 @@
                 android:layout_weight="1"/>
 
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/equipmentQR"
+            android:layout_width="180dp"
+            android:layout_height="180dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/equipmentIdText"/>
 
     </LinearLayout>
 

@@ -54,6 +54,6 @@ dependencies {
     implementation("androidx.credentials:credentials:1.7.0-alpha02")
     implementation("androidx.credentials:credentials-play-services-auth:1.7.0-alpha02")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
-//    implementation("com.google.android.gms:play-services-maps:18.2.0")
-//    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.5.3")
 }

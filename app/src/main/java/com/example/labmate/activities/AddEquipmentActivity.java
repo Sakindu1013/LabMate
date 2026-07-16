@@ -1,12 +1,16 @@
 package com.example.labmate.activities;
 
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -18,6 +22,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.labmate.R;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,10 +32,14 @@ import java.util.Map;
 
 public class AddEquipmentActivity extends AppCompatActivity {
 
-    AutoCompleteTextView actLab;
-    ArrayList<String> labNames;
-    ArrayAdapter<String> adapter;
-    FirebaseFirestore db;
+    private AutoCompleteTextView actLab;
+    private ArrayList<String> labNames;
+    private ArrayAdapter<String> adapter;
+    private FirebaseFirestore db;
+    private ImageView equipmentQR;
+    private TextView equipmentIdText;
+
+    private String qrId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +51,9 @@ public class AddEquipmentActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        equipmentQR = findViewById(R.id.equipmentQR);
+        equipmentIdText = findViewById(R.id.equipmentIdText);
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", 0);
         String role = prefs.getString("role", "");
@@ -92,8 +106,8 @@ public class AddEquipmentActivity extends AppCompatActivity {
             }
         });
 
-        Button button_add_lab = (Button) findViewById(R.id.btn_add_lab);
-        button_add_lab.setOnClickListener(new View.OnClickListener() {
+        Button button_add_equipment = (Button) findViewById(R.id.btn_add_equipment);
+        button_add_equipment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -117,6 +131,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
                 equipment.put("createdAt", System.currentTimeMillis());
                 equipment.put("createdBy", username);
                 equipment.put("createdByRole", role);
+                equipment.put("qrId", qrId);
 
                 db.collection("equipments")
                         .add(equipment)
@@ -138,6 +153,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
         });
 
         loadLabs();
+        generateEquipmentId();
     }
 
     public void loadLabs(){
@@ -159,5 +175,40 @@ public class AddEquipmentActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void generateEquipmentId(){
+        db.collection("equipments")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    int count = snapshot.size() + 1;
+                    qrId = String.format("EQ%06d", count);
+
+                    Bitmap qrBitmap = generateQRCode(qrId);
+
+                    equipmentQR.setImageBitmap(qrBitmap);
+                    equipmentIdText.setText(qrId);
+
+                });
+    }
+
+    private Bitmap generateQRCode(String text){
+        try {
+            BitMatrix matrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 400, 400);
+
+            Bitmap bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565);
+
+            for (int x = 0; x < 400; x++){
+                for (int y = 0; y < 400; y++){
+
+                    bitmap.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bitmap;
+
+        } catch (Exception e){
+            return null;
+        }
     }
 }
