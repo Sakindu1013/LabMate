@@ -24,12 +24,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 
 public class HomeFragment extends Fragment {
-    TextView txtName;
-    TextView txtRole;
-    Button buttonBorrow;
-    Button buttonReturn;
-    Button buttonManageInventory;
-    Button buttonManageUsers;
+    private TextView txtName;
+    private TextView txtRole;
+    private Button buttonBorrow;
+    private Button buttonReturn;
+    private Button buttonManageInventory;
+    private Button buttonManageUsers;
 
     public HomeFragment() {
 

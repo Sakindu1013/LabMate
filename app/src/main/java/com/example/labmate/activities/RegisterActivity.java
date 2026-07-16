@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    FirebaseAuth mAuth;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,13 +172,24 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                registerName.setText("");
-                registerPassword.setText("");
-                confirmPassword.setText("");
-                registerEmail.setText("");
-                registerMobile.setText("");
-                registerDOB.setText("");
-                roleDropdown.setText(null);
+                new MaterialAlertDialogBuilder(RegisterActivity.this)
+                        .setTitle("Clear Form")
+                        .setMessage("Do you want to clear the form?")
+                        .setCancelable(false)
+                        .setPositiveButton("Clear", (dialog, which) -> {
+
+                            registerName.setText("");
+                            registerPassword.setText("");
+                            confirmPassword.setText("");
+                            registerEmail.setText("");
+                            registerMobile.setText("");
+                            registerDOB.setText("");
+                            roleDropdown.setText(null);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            dialog.dismiss();
+                        })
+                        .show();
             }
         });
     }
