@@ -15,7 +15,6 @@ public class EquipmentSummary {
     public String getType() {
         return type;
     }
-
     public int getInLab() {
         return inLab;
     }

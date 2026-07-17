@@ -8,10 +8,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.AddEquipmentActivity;
@@ -42,8 +44,6 @@ public class EquipmentFragment extends Fragment {
 
         SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", 0);
         String role = prefs.getString("role", "");
-        String name = prefs.getString("name","");
-        boolean isAdmin = "Admin".equals(role);
 
         buttonAddEquip = view.findViewById(R.id.manage_equipment);
         buttonAddEquip.setVisibility(View.GONE);
@@ -122,6 +122,20 @@ public class EquipmentFragment extends Fragment {
                     equipmentSummaryList.sort((a,b) ->
                             a.getType().compareToIgnoreCase(b.getType()));
                     adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error loading equipment", e);
                 });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.d("EquipmentFragment", "onResume called");
+
+        if (db != null) {
+            loadEquipmentSummary();
+        }
     }
 }

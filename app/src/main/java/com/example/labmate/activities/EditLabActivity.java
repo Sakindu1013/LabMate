@@ -63,7 +63,7 @@ public class EditLabActivity extends AppCompatActivity {
         editLocation = locationDropdown;
 
         editLab = findViewById(R.id.btn_edit_lab);
-        deleteLab = findViewById(R.id.btn_clear);
+        deleteLab = findViewById(R.id.btn_delete_lab);
 
         editLab.setOnClickListener(v -> {
 
