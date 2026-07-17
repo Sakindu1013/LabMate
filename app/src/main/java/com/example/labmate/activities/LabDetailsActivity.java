@@ -2,8 +2,8 @@ package com.example.labmate.activities;
 
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -120,6 +120,18 @@ public class LabDetailsActivity extends AppCompatActivity {
                     equipmentSummaryList.sort((a,b) ->
                             a.getType().compareToIgnoreCase(b.getType()));
                     adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                 });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (labName != null) {
+            loadEquipmentSummary(labName);
+        }
     }
 }

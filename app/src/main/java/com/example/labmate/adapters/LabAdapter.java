@@ -61,7 +61,6 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
 
         holder.edit.setOnClickListener(v -> {
             Intent editIntent = new Intent(context, EditLabActivity.class);
-
             editIntent.putExtra("LAB_NAME", lab.getName());
             editIntent.putExtra("LAB_IN_CHARGE", lab.getInCharge());
             editIntent.putExtra("LAB_LOCATION", lab.getLocation());

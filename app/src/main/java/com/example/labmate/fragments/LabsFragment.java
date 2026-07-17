@@ -15,7 +15,6 @@ import android.widget.Button;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.AddLabActivity;
-import com.example.labmate.activities.BorrowEquipmentActivity;
 import com.example.labmate.adapters.LabAdapter;
 import com.example.labmate.models.Lab;
 import com.google.firebase.firestore.DocumentSnapshot;
