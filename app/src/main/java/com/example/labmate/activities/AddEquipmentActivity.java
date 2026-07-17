@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -76,7 +75,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
         actLab.setAdapter(adapter);
 
         EditText equipmentName, equipmentModel;
-        AutoCompleteTextView equipmentLab, equipmentState;
+        AutoCompleteTextView equipmentLab;
         equipmentName = findViewById(R.id.equipmentName);
         equipmentModel = findViewById(R.id.equipmentModel);
         equipmentLab = actLab;
