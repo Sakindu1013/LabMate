@@ -42,4 +42,14 @@
     <string name="select_laboratory">Select Laboratory</string>
     <string name="select_equipment_type">Select Equipment Type</string>
     <string name="select_state">Select State</string>
+    <string name="under_maintenance">Under Maintenance</string>
+    <string name="borrowed">Borrowed</string>
+    <string name="in_lab">In Lab</string>
+    <string name="removed">Removed</string>
+    <string name="update_department_laboratory">Update Department Laboratory</string>
+    <string name="update_laboratory_equipments">Update Laboratory Equipments</string>
+    <string name="delete_laboratory">Delete Laboratory</string>
+    <string name="delete_equipment">Delete Equipment</string>
+    <string name="equipment_qr_id">Equipment QR ID</string>
+    <string name="equipment_model">Equipment Model</string>
 </resources>

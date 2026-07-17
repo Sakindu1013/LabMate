@@ -2,7 +2,6 @@ package com.example.labmate.activities;
 
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,7 +14,6 @@ import com.example.labmate.fragments.LabsFragment;
 import com.example.labmate.fragments.ProfileFragment;
 import com.example.labmate.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class DashboardActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigation;
