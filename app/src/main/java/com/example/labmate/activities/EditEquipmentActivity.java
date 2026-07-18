@@ -25,7 +25,6 @@ public class EditEquipmentActivity extends AppCompatActivity {
     private EditText equipmentName;
     private EditText equipmentModel;
     private EditText equipmentQR;
-    private AutoCompleteTextView editState;
     private AutoCompleteTextView actLab;
     private Button editEquipment;
     private Button deleteEquipment;
@@ -55,7 +54,6 @@ public class EditEquipmentActivity extends AppCompatActivity {
         equipmentQR = findViewById(R.id.qrId);
         equipmentName = findViewById(R.id.equipmentName);
         equipmentModel = findViewById(R.id.equipmentModel);
-        editState = findViewById(R.id.actState);
         actLab = findViewById(R.id.actLab);
         editEquipment = findViewById(R.id.btn_edit_equipment);
         deleteEquipment = findViewById(R.id.btn_delete_equipment);
@@ -96,7 +94,7 @@ public class EditEquipmentActivity extends AppCompatActivity {
                 return;
             }
 
-            db.collection("equipments")
+            db.collection("equipment")
                     .whereEqualTo("qrId", qrId)
                     .get()
                     .addOnSuccessListener(snapshot -> {
@@ -104,7 +102,7 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
                             String docId = snapshot.getDocuments().get(0).getId();
 
-                            db.collection("equipments")
+                            db.collection("equipment")
                                     .document(docId)
                                     .update("lab", updateLab, "state", updateState)
                                     .addOnSuccessListener(unused -> {
@@ -131,7 +129,7 @@ public class EditEquipmentActivity extends AppCompatActivity {
                     .setCancelable(false)
                     .setPositiveButton("Delete", (dialog, which) -> {
 
-                        db.collection("equipments")
+                        db.collection("equipment")
                                 .whereEqualTo("qrId", qrId)
                                 .get()
                                 .addOnSuccessListener(snapshot -> {
@@ -139,9 +137,9 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
                                         String docId = snapshot.getDocuments().get(0).getId();
 
-                                        db.collection("equipments")
+                                        db.collection("equipment")
                                                 .document(docId)
-                                                .delete()
+                                                .update("state", "Removed")
                                                 .addOnSuccessListener(unused -> {
                                                     Toast.makeText(getApplicationContext(), "Equipment Successfully Deleted", Toast.LENGTH_LONG).show();
                                                     finish();

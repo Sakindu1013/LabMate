@@ -20,10 +20,12 @@ public class EquipmentSummaryAdapter extends RecyclerView.Adapter<EquipmentSumma
 
     private Context context;
     private ArrayList<EquipmentSummary> equipments;
+    private String labName;
 
-    public EquipmentSummaryAdapter(Context context, ArrayList<EquipmentSummary> equipments){
+    public EquipmentSummaryAdapter(Context context, ArrayList<EquipmentSummary> equipments, String labName){
         this.context = context;
         this.equipments = equipments;
+        this.labName = labName;
     }
 
     @NonNull
@@ -53,6 +55,7 @@ public class EquipmentSummaryAdapter extends RecyclerView.Adapter<EquipmentSumma
             equipmentIntent.putExtra("BORROWED",equipment.getBorrowed());
             equipmentIntent.putExtra("MAINTENANCE",equipment.getMaintenance());
             equipmentIntent.putExtra("REMOVED",equipment.getRemoved());
+            equipmentIntent.putExtra("LAB_NAME", labName);
             context.startActivity(equipmentIntent);
         });
     }

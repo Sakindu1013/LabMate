@@ -1,5 +1,6 @@
 package com.example.labmate.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,12 +14,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.AddEquipmentActivity;
 import com.example.labmate.adapters.EquipmentSummaryAdapter;
 import com.example.labmate.models.EquipmentSummary;
+import com.example.labmate.utils.Constants;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -32,6 +35,8 @@ public class EquipmentFragment extends Fragment {
     private EquipmentSummaryAdapter adapter;
     private FirebaseFirestore db;
     private Button buttonAddEquip;
+    private String labName;
+    private TextView equipmentTotal;
 
     public EquipmentFragment() {
 
@@ -42,15 +47,12 @@ public class EquipmentFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_equipment, container, false);
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", 0);
-        String role = prefs.getString("role", "");
+        SharedPreferences prefs = requireActivity().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        String role = prefs.getString(Constants.KEY_ROLE, "");
+        boolean isAdmin = Constants.ROLE_ADMIN.equalsIgnoreCase(role);
 
         buttonAddEquip = view.findViewById(R.id.manage_equipment);
-        buttonAddEquip.setVisibility(View.GONE);
-
-        if ("Admin".equals(role)){
-            buttonAddEquip.setVisibility(View.VISIBLE);
-        }
+        buttonAddEquip.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
         buttonAddEquip.setOnClickListener(v -> {
             Intent addLabIntent = new Intent(requireContext(), AddEquipmentActivity.class);
@@ -60,8 +62,10 @@ public class EquipmentFragment extends Fragment {
         recyclerView = view.findViewById(R.id.labRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        equipmentTotal = view.findViewById(R.id.equipmentTotal);
+
         equipmentSummaryList = new ArrayList<>();
-        adapter = new EquipmentSummaryAdapter(getContext(), equipmentSummaryList);
+        adapter = new EquipmentSummaryAdapter(getContext(), equipmentSummaryList, labName);
 
         recyclerView.setAdapter(adapter);
         db = FirebaseFirestore.getInstance();
@@ -73,11 +77,14 @@ public class EquipmentFragment extends Fragment {
 
     public void loadEquipmentSummary(){
 
-        db.collection("equipments")
+        db.collection("equipment")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
                     equipmentSummaryList.clear();
+
+                    int totalEquipment = queryDocumentSnapshots.size();
+                    equipmentTotal.setText("Total Equipment: " + totalEquipment);
 
                     HashMap<String, EquipmentSummary> map = new HashMap<>();
 

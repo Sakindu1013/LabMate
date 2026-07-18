@@ -32,7 +32,6 @@
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="20dp"/>
 
-        <!-- Lab Name -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
@@ -49,7 +48,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Lab Name -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"

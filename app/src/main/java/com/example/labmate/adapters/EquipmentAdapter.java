@@ -3,10 +3,12 @@ package com.example.labmate.adapters;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.labmate.R;
 import com.example.labmate.activities.EditEquipmentActivity;
 import com.example.labmate.models.Equipment;
+import com.example.labmate.utils.Constants;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
@@ -43,6 +46,12 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
     @Override
     public void onBindViewHolder(@NonNull EquipmentViewHolder holder, int position){
         Equipment equipment = equipmentList.get(position);
+
+        SharedPreferences prefs = context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        String role = prefs.getString(Constants.KEY_ROLE, "");
+        boolean isAdmin = Constants.ROLE_ADMIN.equalsIgnoreCase(role);
+
+        holder.edit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
         holder.name.setText(equipment.getEquipmentName());
         holder.model.setText("Model: " + equipment.getEquipmentModel());

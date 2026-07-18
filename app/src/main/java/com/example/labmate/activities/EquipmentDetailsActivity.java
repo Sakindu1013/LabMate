@@ -27,6 +27,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
     private int borrowed;
     private int underMaintenance;
     private int removed;
+    private String labName;
     private TextView viewType;
     private TextView viewTotal;
     private TextView viewInLab;
@@ -57,6 +58,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
         borrowed = getIntent().getIntExtra("BORROWED", 0);
         underMaintenance = getIntent().getIntExtra("MAINTENANCE", 0);
         removed = getIntent().getIntExtra("REMOVED", 0);
+        labName = getIntent().getStringExtra("LAB_NAME");
 
         viewType = findViewById(R.id.equipmentType);
         viewTotal = findViewById(R.id.equipmentTotal);
@@ -83,73 +85,155 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
     }
 
     private void loadEquipmentData(String equipmentType) {
-        db.collection("equipments")
-                .whereEqualTo("type", equipmentType)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    equipmentList.clear();
+        if (labName != null){
 
-                    for (DocumentSnapshot doc : queryDocumentSnapshots){
+            db.collection("equipment")
+                    .whereEqualTo("type", equipmentType)
+                    .whereEqualTo("lab", labName)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                        Equipment equipment = doc.toObject(Equipment.class);
-                        equipmentList.add(equipment);
-                    }
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                        equipmentList.clear();
+
+                        for (DocumentSnapshot doc : queryDocumentSnapshots){
+
+                            Equipment equipment = doc.toObject(Equipment.class);
+                            equipmentList.add(equipment);
+                        }
+                        equipmentList.sort((a,b) ->
+                                a.getQrId().compareToIgnoreCase(b.getQrId()));
+                        adapter.notifyDataSetChanged();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+
+        } else {
+
+            db.collection("equipment")
+                    .whereEqualTo("type", equipmentType)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+
+                        equipmentList.clear();
+
+                        for (DocumentSnapshot doc : queryDocumentSnapshots){
+
+                            Equipment equipment = doc.toObject(Equipment.class);
+                            equipmentList.add(equipment);
+                        }
+                        equipmentList.sort((a,b) ->
+                                a.getQrId().compareToIgnoreCase(b.getQrId()));
+                        adapter.notifyDataSetChanged();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+        }
     }
 
     private void updateSummary() {
 
-        db.collection("equipments")
-                .whereEqualTo("type", equipmentType)
-                .get()
-                .addOnSuccessListener(snapshot -> {
+        if (labName != null){
 
-                    int total = 0;
-                    int inLab = 0;
-                    int borrowed = 0;
-                    int maintenance = 0;
-                    int removed = 0;
+            db.collection("equipment")
+                    .whereEqualTo("type", equipmentType)
+                    .whereEqualTo("lab", labName)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
 
-                    for (DocumentSnapshot doc : snapshot) {
+                        int total = 0;
+                        int inLab = 0;
+                        int borrowed = 0;
+                        int maintenance = 0;
+                        int removed = 0;
 
-                        total++;
-                        String state = doc.getString("state");
+                        for (DocumentSnapshot doc : snapshot) {
 
-                        if (state == null)
-                            continue;
+                            total++;
+                            String state = doc.getString("state");
 
-                        switch(state){
+                            if (state == null)
+                                continue;
 
-                            case "In Lab":
-                                inLab++;
-                                break;
+                            switch(state){
 
-                            case "Borrowed":
-                                borrowed++;
-                                break;
+                                case "In Lab":
+                                    inLab++;
+                                    break;
 
-                            case "Under Maintenance":
-                                maintenance++;
-                                break;
+                                case "Borrowed":
+                                    borrowed++;
+                                    break;
 
-                            case "Removed":
-                                removed++;
-                                break;
+                                case "Under Maintenance":
+                                    maintenance++;
+                                    break;
+
+                                case "Removed":
+                                    removed++;
+                                    break;
+                            }
                         }
-                    }
 
-                    viewTotal.setText(total + " Equipment");
-                    viewInLab.setText(String.valueOf(inLab));
-                    viewBorrowed.setText(String.valueOf(borrowed));
-                    viewMaintenance.setText(String.valueOf(maintenance));
-                    viewRemoved.setText(String.valueOf(removed));
+                        viewTotal.setText(total + " Equipment");
+                        viewInLab.setText(String.valueOf(inLab));
+                        viewBorrowed.setText(String.valueOf(borrowed));
+                        viewMaintenance.setText(String.valueOf(maintenance));
+                        viewRemoved.setText(String.valueOf(removed));
 
-                });
+                    });
+
+        } else {
+
+            db.collection("equipment")
+                    .whereEqualTo("type", equipmentType)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+
+                        int total = 0;
+                        int inLab = 0;
+                        int borrowed = 0;
+                        int maintenance = 0;
+                        int removed = 0;
+
+                        for (DocumentSnapshot doc : snapshot) {
+
+                            total++;
+                            String state = doc.getString("state");
+
+                            if (state == null)
+                                continue;
+
+                            switch(state){
+
+                                case "In Lab":
+                                    inLab++;
+                                    break;
+
+                                case "Borrowed":
+                                    borrowed++;
+                                    break;
+
+                                case "Under Maintenance":
+                                    maintenance++;
+                                    break;
+
+                                case "Removed":
+                                    removed++;
+                                    break;
+                            }
+                        }
+
+                        viewTotal.setText(total + " Equipment");
+                        viewInLab.setText(String.valueOf(inLab));
+                        viewBorrowed.setText(String.valueOf(borrowed));
+                        viewMaintenance.setText(String.valueOf(maintenance));
+                        viewRemoved.setText(String.valueOf(removed));
+
+                    });
+        }
     }
 
     @Override

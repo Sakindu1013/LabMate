@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
@@ -33,12 +34,14 @@ public class AddEquipmentActivity extends AppCompatActivity {
 
     private AutoCompleteTextView actLab;
     private ArrayList<String> labNames;
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> labAdapter;
     private FirebaseFirestore db;
     private ImageView equipmentQR;
     private TextView equipmentIdText;
-
     private String qrId;
+    private AutoCompleteTextView typeDropdown;
+    private ArrayList<String> equipmentTypes;
+    private ArrayAdapter<String> typeAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,8 @@ public class AddEquipmentActivity extends AppCompatActivity {
             return insets;
         });
 
+        db = FirebaseFirestore.getInstance();
+
         equipmentQR = findViewById(R.id.equipmentQR);
         equipmentIdText = findViewById(R.id.equipmentIdText);
 
@@ -58,10 +63,11 @@ public class AddEquipmentActivity extends AppCompatActivity {
         String role = prefs.getString("role", "");
         String username = prefs.getString("name","");
 
-        AutoCompleteTextView typeDropdown = findViewById(R.id.actType);
-        String[] types = getResources().getStringArray(R.array.equipment_types);
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, com.google.android.material.R.layout.mtrl_auto_complete_simple_item, types);
+        typeDropdown = findViewById(R.id.actType);
+        equipmentTypes = new ArrayList<>();
+        typeAdapter = new ArrayAdapter<>(this, com.google.android.material.R.layout.mtrl_auto_complete_simple_item, equipmentTypes);
         typeDropdown.setAdapter(typeAdapter);
+        loadEquipmentTypes();
 
         AutoCompleteTextView stateDropdown = findViewById(R.id.actState);
         String[] states = getResources().getStringArray(R.array.equipment_states);
@@ -69,10 +75,9 @@ public class AddEquipmentActivity extends AppCompatActivity {
         stateDropdown.setAdapter(stateAdapter);
 
         actLab = findViewById(R.id.actLab);
-        db = FirebaseFirestore.getInstance();
         labNames = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, labNames);
-        actLab.setAdapter(adapter);
+        labAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, labNames);
+        actLab.setAdapter(labAdapter);
 
         EditText equipmentName, equipmentModel;
         AutoCompleteTextView equipmentLab;
@@ -85,6 +90,11 @@ public class AddEquipmentActivity extends AppCompatActivity {
         });
 
         typeDropdown.setOnItemClickListener((parent, view, position, id) -> {
+
+            String selected = parent.getItemAtPosition(position).toString();
+            if (selected.equals("+ Add New Type")){
+                showAppTypeDialog();
+            }
             typeDropdown.clearFocus();
         });
 
@@ -132,7 +142,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
                 equipment.put("createdByRole", role);
                 equipment.put("qrId", qrId);
 
-                db.collection("equipments")
+                db.collection("equipment")
                         .add(equipment)
                         .addOnSuccessListener(unused -> {
                             Toast.makeText(getApplicationContext(), "Equipment Added Successfully", Toast.LENGTH_LONG).show();
@@ -155,6 +165,69 @@ public class AddEquipmentActivity extends AppCompatActivity {
         generateEquipmentId();
     }
 
+    private void showAppTypeDialog() {
+
+        EditText input = new EditText(this);
+        input.setHint("Equipment Type");
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Add New Equipment Type")
+                .setCancelable(false)
+                .setView(input)
+                .setPositiveButton("Add", (dialog, which) -> {
+
+                    String newType = input.getText().toString().trim();
+                    if (!newType.isEmpty()){
+                        saveNewType(newType);
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private void saveNewType(String newType) {
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("typeName", newType);
+
+        db.collection("equipmentTypes")
+                .add(data)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getApplicationContext(), "Type Added Successfully", Toast.LENGTH_LONG).show();
+
+                    loadEquipmentTypes();
+                    typeDropdown.setText(newType, false);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void loadEquipmentTypes() {
+        db.collection("equipmentTypes")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    equipmentTypes.clear();
+
+                    for (DocumentSnapshot doc : snapshot){
+
+                        String type = doc.getString("typeName");
+                        if (type != null){
+                            equipmentTypes.add(type);
+                        }
+                    }
+
+                    equipmentTypes.add("+ Add New Type");
+                    typeAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     public void loadLabs(){
 
         db.collection("labs")
@@ -169,7 +242,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
                             labNames.add(labName);
                         }
                     }
-                    adapter.notifyDataSetChanged();
+                    labAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -177,7 +250,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
     }
 
     private void generateEquipmentId(){
-        db.collection("equipments")
+        db.collection("equipment")
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
