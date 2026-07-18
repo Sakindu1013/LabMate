@@ -1,6 +1,7 @@
 package com.example.labmate.activities;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,8 +10,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 public class QRScannerActivity extends AppCompatActivity {
 
@@ -25,26 +26,29 @@ public class QRScannerActivity extends AppCompatActivity {
             return insets;
         });
 
-        IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.setPrompt("Scan Equipment QR Code");
-        integrator.setBeepEnabled(true);
-        integrator.setOrientationLocked(false);
-        integrator.initiateScan();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        ScanOptions scanOptions = new ScanOptions();
+        scanOptions.setPrompt("Scan Equipment QR Code");
+        scanOptions.setBeepEnabled(true);
+        scanOptions.setOrientationLocked(true);
+
+        barcodeLauncher.launch(scanOptions);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
+    private final androidx.activity.result.ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(), result ->{
 
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result.getContents() != null){
 
-        if (result != null){
-            if (result.getContents() != null){
-                String qrId = result.getContents();
-                System.out.println(qrId);
-            }
+            Intent intent = new Intent();
+            intent.putExtra("QR_ID", result.getContents());
+            setResult(RESULT_OK, intent);
+
+        } else {
+            setResult(RESULT_CANCELED);
         }
 
-        super.onActivityResult(requestCode, resultCode, data);
+        finish();
+    });
 
-    }
 }
