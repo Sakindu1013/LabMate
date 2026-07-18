@@ -100,7 +100,7 @@ public class HomeFragment extends Fragment {
                         txtName.setText(name != null ? name : "Unknown");
                         txtRole.setText(role != null ? role : "No Role");
 
-                        SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", 0);
+                        SharedPreferences prefs = getActivity().getSharedPreferences("UserPrefs", 0);
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putString("name", name);
                         editor.putString("role", role);

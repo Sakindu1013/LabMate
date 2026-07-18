@@ -25,6 +25,7 @@ public class LabDetailsActivity extends AppCompatActivity {
     private TextView viewName;
     private TextView viewInCharge;
     private TextView viewlocation;
+    private TextView equipmentTotal;
     private RecyclerView recyclerView;
     private EquipmentSummaryAdapter adapter;
     private ArrayList<EquipmentSummary> equipmentSummaryList;
@@ -52,6 +53,7 @@ public class LabDetailsActivity extends AppCompatActivity {
         viewName = findViewById(R.id.labName);
         viewInCharge = findViewById(R.id.personInCharge);
         viewlocation = findViewById(R.id.actLocation);
+        equipmentTotal = findViewById(R.id.equipmentTotal);
 
         viewName.setText(labName);
         viewInCharge.setText("In Charge: " + labInCharge);
@@ -62,7 +64,7 @@ public class LabDetailsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         equipmentSummaryList = new ArrayList<>();
-        adapter = new EquipmentSummaryAdapter(this, equipmentSummaryList);
+        adapter = new EquipmentSummaryAdapter(this, equipmentSummaryList, labName);
 
         recyclerView.setAdapter(adapter);
         loadEquipmentSummary(labName);
@@ -70,12 +72,15 @@ public class LabDetailsActivity extends AppCompatActivity {
 
     public void loadEquipmentSummary(String labName){
 
-        db.collection("equipments")
+        db.collection("equipment")
                 .whereEqualTo("lab", labName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
                     equipmentSummaryList.clear();
+
+                    int totalEquipment = queryDocumentSnapshots.size();
+                    equipmentTotal.setText("Total Equipment: " + totalEquipment);
 
                     HashMap<String, EquipmentSummary> map = new HashMap<>();
 

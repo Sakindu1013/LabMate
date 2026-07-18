@@ -56,7 +56,6 @@ public class EditLabActivity extends AppCompatActivity {
 
         editName = findViewById(R.id.labName);
         editInCharge = findViewById(R.id.personInCharge);
-        editLocation = findViewById(R.id.actLocation);
 
         editName.setText(labName);
         editInCharge.setText(labInCharge);
@@ -73,6 +72,11 @@ public class EditLabActivity extends AppCompatActivity {
 
             if (updateName.isEmpty() || updateInCharge.isEmpty() || updateLocation.isEmpty()){
                 Toast.makeText(getApplicationContext(), "Fill all details", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (labId == null) {
+                Toast.makeText(getApplicationContext(), "Lab ID missing", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -95,6 +99,11 @@ public class EditLabActivity extends AppCompatActivity {
                     .setMessage("Do you want to delete this laboratory?")
                     .setCancelable(false)
                     .setPositiveButton("Delete", (dialog, which) -> {
+
+                        if (labId == null) {
+                            Toast.makeText(getApplicationContext(), "Lab ID missing", Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
                         db.collection("labs")
                                 .document(labId)

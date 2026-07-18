@@ -16,7 +16,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="mobile_number">Mobile Number</string>
     <string name="date_of_birth">Date of Birth</string>
-    <string name="fill_the_form_to_borrow_lab_equipments">Fill the form to borrow lab equipments</string>
+    <string name="fill_the_form_to_borrow_lab_equipments">Fill the form to borrow lab equipment</string>
     <string name="select_role">Select Role</string>
     <string name="return_equipment">Return Equipment</string>
     <string name="inventory_manage">Manage Inventory</string>
@@ -47,9 +47,11 @@
     <string name="in_lab">In Lab</string>
     <string name="removed">Removed</string>
     <string name="update_department_laboratory">Update Department Laboratory</string>
-    <string name="update_laboratory_equipments">Update Laboratory Equipments</string>
+    <string name="update_laboratory_equipments">Update Laboratory Equipment</string>
     <string name="delete_laboratory">Delete Laboratory</string>
     <string name="delete_equipment">Delete Equipment</string>
     <string name="equipment_qr_id">Equipment QR ID</string>
     <string name="equipment_model">Equipment Model</string>
+    <string name="borrow_equipment">Borrow Equipment</string>
+    <string name="scan_qr">Scan QR</string>
 </resources>

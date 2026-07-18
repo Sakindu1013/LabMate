@@ -21,10 +21,4 @@
         <item>Removed</item>
     </string-array>
 
-    <string-array name="equipment_types">
-        <item>Multimeter</item>
-        <item>Digital Storage Oscilloscope</item>
-        <item>Function Generator</item>
-        <item>DC Power Supply</item>
-    </string-array>
 </resources>

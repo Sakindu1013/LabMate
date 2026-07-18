@@ -1,5 +1,6 @@
 package com.example.labmate.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import com.example.labmate.R;
 import com.example.labmate.activities.AddLabActivity;
 import com.example.labmate.adapters.LabAdapter;
 import com.example.labmate.models.Lab;
+import com.example.labmate.utils.Constants;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -39,17 +42,12 @@ public class LabsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_labs, container, false);
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", 0);
-        String role = prefs.getString("role", "");
-        String name = prefs.getString("name","");
-        boolean isAdmin = "Admin".equals(role);
+        SharedPreferences prefs = requireActivity().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        String role = prefs.getString(Constants.KEY_ROLE, "");
+        boolean isAdmin = Constants.ROLE_ADMIN.equalsIgnoreCase(role);
 
         buttonAddLab = view.findViewById(R.id.manage_labs);
-        buttonAddLab.setVisibility(View.GONE);
-
-        if ("Admin".equals(role)){
-            buttonAddLab.setVisibility(View.VISIBLE);
-        }
+        buttonAddLab.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
         buttonAddLab.setOnClickListener(v -> {
             Intent addLabIntent = new Intent(requireContext(), AddLabActivity.class);
@@ -78,12 +76,21 @@ public class LabsFragment extends Fragment {
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots){
 
-                        Lab lab = new Lab(doc.getString("labName"), doc.getString("personInCharge"), doc.getString("location"));
+                        Lab lab = new Lab(doc.getId(), doc.getString("labName"), doc.getString("personInCharge"), doc.getString("location"));
                         labList.add(lab);
                     }
                     labList.sort((a,b) ->
                             a.getName().compareToIgnoreCase(b.getName()));
                     adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error loading equipment", e);
                 });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadLabs();
     }
 }

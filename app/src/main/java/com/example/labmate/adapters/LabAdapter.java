@@ -45,11 +45,7 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
         holder.inCharge.setText("In Charge: " + lab.getInCharge());
         holder.location.setText("Location: " + lab.getLocation());
 
-        if (isAdmin){
-            holder.edit.setVisibility(View.VISIBLE);
-        } else {
-            holder.edit.setVisibility(View.GONE);
-        }
+        holder.edit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> {
             Intent labIntent = new Intent(context, LabDetailsActivity.class);
@@ -61,6 +57,7 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
 
         holder.edit.setOnClickListener(v -> {
             Intent editIntent = new Intent(context, EditLabActivity.class);
+            editIntent.putExtra("LAB_ID", lab.getLabId());
             editIntent.putExtra("LAB_NAME", lab.getName());
             editIntent.putExtra("LAB_IN_CHARGE", lab.getInCharge());
             editIntent.putExtra("LAB_LOCATION", lab.getLocation());
