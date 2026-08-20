@@ -1,27 +1,25 @@
 package com.example.labmate.fragments;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.AddLabActivity;
 import com.example.labmate.adapters.LabAdapter;
 import com.example.labmate.models.Lab;
-import com.example.labmate.utils.Constants;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.labmate.states.LabsState;
+import com.example.labmate.viewmodels.LabsViewModel;
 
 import java.util.ArrayList;
 
@@ -30,67 +28,193 @@ public class LabsFragment extends Fragment {
     private RecyclerView recyclerView;
     private ArrayList<Lab> labList;
     private LabAdapter adapter;
-    private FirebaseFirestore db;
     private Button buttonAddLab;
 
-    public LabsFragment() {
+    private LabsViewModel labsViewModel;
 
+    public LabsFragment() {
     }
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
 
-        View view = inflater.inflate(R.layout.fragment_labs, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_labs,
+                container,
+                false
+        );
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
-        String role = prefs.getString(Constants.KEY_ROLE, "");
-        boolean isAdmin = Constants.ROLE_ADMIN.equalsIgnoreCase(role);
+        initializeViews(view);
+        setupRecyclerView();
+        setupViewModel();
+        setupListeners();
 
-        buttonAddLab = view.findViewById(R.id.manage_labs);
-        buttonAddLab.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-
-        buttonAddLab.setOnClickListener(v -> {
-            Intent addLabIntent = new Intent(requireContext(), AddLabActivity.class);
-            startActivity(addLabIntent);
-        });
-
-        recyclerView = view.findViewById(R.id.labRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        labList = new ArrayList<>();
-        adapter = new LabAdapter(getContext(), labList, isAdmin);
-
-        recyclerView.setAdapter(adapter);
-        db = FirebaseFirestore.getInstance();
-
-        loadLabs();
         return view;
     }
 
-    public void loadLabs(){
+    @Override
+    public void onViewCreated(
+            View view,
+            Bundle savedInstanceState
+    ) {
+        super.onViewCreated(
+                view,
+                savedInstanceState
+        );
 
-        db.collection("labs")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    labList.clear();
+        labsViewModel.loadLabs();
+    }
 
-                    for (DocumentSnapshot doc : queryDocumentSnapshots){
+    private void initializeViews(View view) {
 
-                        Lab lab = new Lab(doc.getId(), doc.getString("labName"), doc.getString("personInCharge"), doc.getString("location"));
-                        labList.add(lab);
-                    }
-                    labList.sort((a,b) ->
-                            a.getName().compareToIgnoreCase(b.getName()));
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error loading equipment", e);
-                });
+        recyclerView =
+                view.findViewById(
+                        R.id.labRecyclerView
+                );
+
+        buttonAddLab =
+                view.findViewById(
+                        R.id.manage_labs
+                );
+    }
+
+    private void setupRecyclerView() {
+
+        labList = new ArrayList<>();
+
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(
+                        requireContext()
+                )
+        );
+
+        // Initially false.
+        // It will be updated when the ViewModel
+        // returns the user's role.
+        adapter = new LabAdapter(
+                requireContext(),
+                labList,
+                false
+        );
+
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void setupViewModel() {
+
+        labsViewModel =
+                new ViewModelProvider(this)
+                        .get(LabsViewModel.class);
+
+        labsViewModel.getLabsState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        this::handleLabsState
+                );
+    }
+
+    private void setupListeners() {
+
+        buttonAddLab.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            AddLabActivity.class
+                    );
+
+            startActivity(intent);
+        });
+    }
+
+    private void handleLabsState(
+            LabsState state
+    ) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case LOADING:
+                handleLoading();
+                break;
+
+            case SUCCESS:
+                displayLabs(state);
+                break;
+
+            case ERROR:
+                showError(state.getMessage());
+                break;
+
+            case IDLE:
+            default:
+                break;
+        }
+    }
+
+    private void handleLoading() {
+
+        // You can add a ProgressBar here later.
+    }
+
+    private void displayLabs(
+            LabsState state
+    ) {
+
+        boolean isAdmin =
+                state.isAdmin();
+
+        // Show/hide Add Lab button.
+        buttonAddLab.setVisibility(
+                isAdmin
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+
+        // Update adapter permission.
+        adapter.setAdmin(isAdmin);
+
+        // Update list.
+        labList.clear();
+
+        if (state.getLabs() != null) {
+            labList.addAll(
+                    state.getLabs()
+            );
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private void showError(String message) {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        Toast.makeText(
+                requireContext(),
+                message != null
+                        ? message
+                        : "Failed to load labs.",
+                Toast.LENGTH_LONG
+        ).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadLabs();
+
+        if (labsViewModel != null) {
+            labsViewModel.loadLabs();
+        }
     }
 }

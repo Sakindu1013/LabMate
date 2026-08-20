@@ -15,146 +15,398 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.labmate.R;
+import com.example.labmate.models.LoginRequest;
+import com.example.labmate.states.LoginState;
+import com.example.labmate.viewmodels.LoginViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
+    private LoginViewModel loginViewModel;
+
+    private EditText email;
+    private EditText password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
+
+                    Insets systemBars =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
+
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
+
+                    return insets;
+                }
+        );
+
+        loginViewModel =
+                new ViewModelProvider(this)
+                        .get(LoginViewModel.class);
+
+        initializeViews();
+        setupListeners();
+        observeViewModel();
+    }
+
+    private void initializeViews() {
+
+        email = findViewById(R.id.loginEmail);
+        password = findViewById(R.id.password);
+    }
+
+    private void setupListeners() {
+
+        Button googleButton = findViewById(R.id.google_button);
+
+        googleButton.setOnClickListener(v ->
+                Toast.makeText(
+                        this,
+                        "Under Construction",
+                        Toast.LENGTH_LONG
+                ).show()
+        );
+
+        TextView forgotPassword =
+                findViewById(R.id.forgotPassword);
+
+        forgotPassword.setOnClickListener(v ->
+                showPasswordResetDialog()
+        );
+
+        Button loginButton =
+                findViewById(R.id.btn_login);
+
+        loginButton.setOnClickListener(v ->
+                performLogin()
+        );
+
+        Button registerButton =
+                findViewById(R.id.btn_register);
+
+        registerButton.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            LoginActivity.this,
+                            RegisterActivity.class
+                    );
+
+            startActivity(intent);
         });
 
-        Button button_google = (Button) findViewById(R.id.google_button);
-        button_google.setOnClickListener(v -> {
-            Toast.makeText(getApplicationContext(), "Under Construction", Toast.LENGTH_LONG).show();
-        });
+        setupKeyboardDismissListener();
+    }
 
-        mAuth = FirebaseAuth.getInstance();
+    private void performLogin() {
 
-        EditText username = findViewById(R.id.loginEmail);
-        EditText password = findViewById(R.id.password);
-        TextView forgotPassword = findViewById(R.id.forgotPassword);
+        String emailAddress =
+                email.getText()
+                        .toString()
+                        .trim();
 
-        forgotPassword.setOnClickListener(v -> {
+        String passwordText =
+                password.getText()
+                        .toString();
 
-            EditText resetEmail = new EditText(LoginActivity.this);
+        if (emailAddress.isEmpty()
+                || passwordText.isEmpty()) {
 
-            resetEmail.setHint("Enter Your Email");
-            resetEmail.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-            resetEmail.setPadding(50,20,50,20);
+            Toast.makeText(
+                    this,
+                    "Fill all details",
+                    Toast.LENGTH_LONG
+            ).show();
 
-            new MaterialAlertDialogBuilder(LoginActivity.this)
-                    .setTitle("Reset Password")
-                    .setMessage("Enter your email address and we will send you a password reset link.")
-                    .setView(resetEmail)
-                    .setPositiveButton("Send", (dialog, which) -> {
-                        String email = resetEmail.getText().toString().trim();
+            return;
+        }
 
-                        if (email.isEmpty()){
-                            Toast.makeText(getApplicationContext(), "Enter Your Email Address", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+        LoginRequest request =
+                new LoginRequest(
+                        emailAddress,
+                        passwordText
+                );
 
-                        mAuth.sendPasswordResetEmail(email)
-                                .addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()){
-                                        Toast.makeText(getApplicationContext(), "Password Reset Email Sent", Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                    .show();
+        loginViewModel.login(request);
+    }
 
+    private void showPasswordResetDialog() {
 
-        });
+        EditText resetEmail =
+                new EditText(this);
 
-        Button button_login = findViewById(R.id.btn_login);
-        button_login.setOnClickListener(v -> {
+        resetEmail.setHint("Enter Your Email");
+        resetEmail.setInputType(
+                InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        );
+        resetEmail.setPadding(
+                50,
+                20,
+                50,
+                20
+        );
 
-            String user = username.getText().toString();
-            String pass = password.getText().toString();
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Reset Password")
+                .setMessage(
+                        "Enter your email address and we will " +
+                                "send you a password reset link."
+                )
+                .setView(resetEmail)
+                .setPositiveButton(
+                        "Send",
+                        (dialog, which) -> {
 
-            if (user.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Fill all details", Toast.LENGTH_LONG).show();
-                return;
-            }
+                            String emailAddress =
+                                    resetEmail.getText()
+                                            .toString()
+                                            .trim();
 
-            mAuth.signInWithEmailAndPassword(user, pass)
-                    .addOnCompleteListener(task -> {
+                            if (emailAddress.isEmpty()) {
 
-                        if (task.isSuccessful()){
+                                Toast.makeText(
+                                        this,
+                                        "Enter Your Email Address",
+                                        Toast.LENGTH_LONG
+                                ).show();
 
-                            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-                            if (currentUser != null && currentUser.isEmailVerified()){
-
-                                username.setText("");
-                                password.setText("");
-
-                                Intent loginIntent = new Intent(LoginActivity.this, DashboardActivity.class);
-                                Toast.makeText(getApplicationContext(), "Successfully Logged In", Toast.LENGTH_LONG).show();
-                                startActivity(loginIntent);
-
-                            } else {
-                                new MaterialAlertDialogBuilder(LoginActivity.this)
-                                        .setTitle("Email Verification Required")
-                                        .setMessage("Your email address has not been verified.\n\nWould you like us to send another verification email?")
-                                        .setCancelable(false)
-                                        .setPositiveButton("Resend", (dialog, which) -> {
-
-                                            if (currentUser != null){
-                                                currentUser.sendEmailVerification()
-                                                        .addOnSuccessListener(unused -> {
-                                                            Toast.makeText(getApplicationContext(), "Verificaion Email Sent", Toast.LENGTH_LONG).show();
-                                                        })
-                                                        .addOnFailureListener(e -> {
-                                                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                                                        });
-                                            }
-                                        })
-                                        .setNegativeButton("Cancel", (dialog, which) -> {
-                                            FirebaseAuth.getInstance().signOut();
-                                            dialog.dismiss();
-                                        })
-                                        .show();
+                                return;
                             }
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Username or Password is incorrect", Toast.LENGTH_LONG).show();
+
+                            loginViewModel.resetPassword(
+                                    emailAddress
+                            );
                         }
-                    });
-        });
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        (dialog, which) ->
+                                dialog.dismiss()
+                )
+                .show();
+    }
 
-        Button button_register = findViewById(R.id.btn_register);
-        button_register.setOnClickListener(v -> {
-            Intent registerIntent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(registerIntent);
-        });
+    private void observeViewModel() {
 
-        ScrollView loginView = findViewById(R.id.main);
+        loginViewModel.getLoginState()
+                .observe(this, this::handleLoginState);
+
+        loginViewModel.getPasswordResetState()
+                .observe(
+                        this,
+                        this::handlePasswordResetState
+                );
+
+        loginViewModel.getVerificationEmailState()
+                .observe(
+                        this,
+                        this::handleVerificationEmailState
+                );
+    }
+
+    private void handleLoginState(LoginState state) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case LOADING:
+
+                // We can add a ProgressBar here later.
+                break;
+
+            case SUCCESS:
+
+                handleLoginSuccess();
+                break;
+
+            case EMAIL_NOT_VERIFIED:
+
+                showEmailVerificationDialog(
+                        state.getUser()
+                );
+
+                break;
+
+            case ERROR:
+
+                showError(state.getMessage());
+                break;
+
+            case IDLE:
+            default:
+                break;
+        }
+    }
+
+    private void handleLoginSuccess() {
+
+        email.setText("");
+        password.setText("");
+
+        Toast.makeText(
+                this,
+                "Successfully Logged In",
+                Toast.LENGTH_LONG
+        ).show();
+
+        Intent intent =
+                new Intent(
+                        LoginActivity.this,
+                        DashboardActivity.class
+                );
+
+        startActivity(intent);
+        finish();
+    }
+
+    private void showEmailVerificationDialog(
+            com.google.firebase.auth.FirebaseUser user
+    ) {
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Email Verification Required")
+                .setMessage(
+                        "Your email address has not been verified.\n\n" +
+                                "Would you like us to send another " +
+                                "verification email?"
+                )
+                .setCancelable(false)
+                .setPositiveButton(
+                        "Resend",
+                        (dialog, which) ->
+                                loginViewModel
+                                        .resendVerificationEmail(user)
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        (dialog, which) ->
+                                loginViewModel.logout()
+                )
+                .show();
+    }
+
+    private void handlePasswordResetState(
+            LoginState state
+    ) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case SUCCESS:
+
+                Toast.makeText(
+                        this,
+                        "Password Reset Email Sent",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                break;
+
+            case ERROR:
+
+                showError(state.getMessage());
+                break;
+
+            case LOADING:
+            case IDLE:
+            case EMAIL_NOT_VERIFIED:
+            default:
+                break;
+        }
+    }
+
+    private void handleVerificationEmailState(
+            LoginState state
+    ) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case SUCCESS:
+
+                Toast.makeText(
+                        this,
+                        "Verification email sent successfully.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                break;
+
+            case ERROR:
+
+                showError(state.getMessage());
+                break;
+
+            case LOADING:
+            case IDLE:
+            case EMAIL_NOT_VERIFIED:
+            default:
+                break;
+        }
+    }
+
+    private void showError(String message) {
+
+        if (message != null && !message.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    message,
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+    }
+
+    private void setupKeyboardDismissListener() {
+
+        ScrollView loginView =
+                findViewById(R.id.main);
+
         loginView.setOnClickListener(v -> {
-            View focusedView = getCurrentFocus();
+
+            View focusedView =
+                    getCurrentFocus();
 
             loginView.clearFocus();
 
-            if (focusedView != null){
-                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(focusedView.getWindowToken(), 0);
-            }
+            if (focusedView != null) {
 
+                InputMethodManager imm =
+                        (InputMethodManager)
+                                getSystemService(
+                                        INPUT_METHOD_SERVICE
+                                );
+
+                imm.hideSoftInputFromWindow(
+                        focusedView.getWindowToken(),
+                        0
+                );
+            }
         });
     }
 }

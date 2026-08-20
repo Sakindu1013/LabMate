@@ -32,6 +32,7 @@ public class QRScannerActivity extends AppCompatActivity {
         scanOptions.setPrompt("Scan Equipment QR Code");
         scanOptions.setBeepEnabled(true);
         scanOptions.setOrientationLocked(true);
+        scanOptions.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
 
         barcodeLauncher.launch(scanOptions);
     }
@@ -45,10 +46,11 @@ public class QRScannerActivity extends AppCompatActivity {
             setResult(RESULT_OK, intent);
 
         } else {
-            setResult(RESULT_CANCELED);
+            Intent intent = new Intent();
+            intent.putExtra("ERROR", "QR Scan Cancelled");
+            setResult(RESULT_CANCELED, intent);
         }
 
         finish();
     });
-
 }

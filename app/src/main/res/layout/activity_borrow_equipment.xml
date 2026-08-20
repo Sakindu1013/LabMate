@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/fill_the_form_to_borrow_lab_equipments"
+            android:text="@string/enter_equipment_id_to_borrow_lab_equipments"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="20dp"/>
@@ -101,40 +101,6 @@
                     android:layout_weight="1"/>
 
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:textSize="28sp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="20dp"
-                android:id="@+id/equipmentName"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/equipmentModel"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="10dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/equipmentLab"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="10dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/equipmentState"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="10dp"/>
 
         </LinearLayout>
 

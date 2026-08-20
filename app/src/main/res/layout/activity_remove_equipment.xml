@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/inventory_manage"
+            android:text="@string/remove_equipment"
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enter Equipment ID to get Equipment Details"
+            android:text="@string/enter_equipment_id_to_remove_the_lab_equipment"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="20dp"/>
@@ -71,6 +71,8 @@
                 android:orientation="horizontal"
                 android:gravity="center">
 
+
+
                 <!-- Clear Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear"
@@ -88,10 +90,10 @@
 
                 <!-- Borrow Button -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_search_equipment"
+                    android:id="@+id/btn_remove_equipment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/search_equipment"
+                    android:text="@string/remove_equipment"
                     android:textSize="16sp"
                     android:textColor="@color/button_text"
                     app:backgroundTint="@color/button_primary"
@@ -101,13 +103,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerEquipments"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:layout_marginTop="10dp"/>
 
     </LinearLayout>
 

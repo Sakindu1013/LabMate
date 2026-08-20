@@ -15,50 +15,70 @@ import com.example.labmate.R;
 import com.example.labmate.adapters.EquipmentAdapter;
 import com.example.labmate.models.Equipment;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 
 public class EquipmentDetailsActivity extends AppCompatActivity {
 
-    private String equipmentType;
-    private int total;
-    private int inLab;
-    private int borrowed;
-    private int underMaintenance;
-    private int removed;
-    private String labName;
     private TextView viewType;
     private TextView viewTotal;
     private TextView viewInLab;
     private TextView viewBorrowed;
     private TextView viewMaintenance;
     private TextView viewRemoved;
-    private FirebaseFirestore db;
+
+    private RecyclerView recyclerView;
+
     private ArrayList<Equipment> equipmentList;
     private EquipmentAdapter adapter;
-    private RecyclerView recyclerView;
+
+    private FirebaseFirestore db;
+
+    private String equipmentType;
+    private String labName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_equipment_details);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
+
+                    Insets systemBars =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
+
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
+
+                    return insets;
+                }
+        );
 
         db = FirebaseFirestore.getInstance();
 
-        equipmentType = getIntent().getStringExtra("TYPE");
-        total = getIntent().getIntExtra("TOTAL", 0);
-        inLab = getIntent().getIntExtra("IN_LAB", 0);
-        borrowed = getIntent().getIntExtra("BORROWED", 0);
-        underMaintenance = getIntent().getIntExtra("MAINTENANCE", 0);
-        removed = getIntent().getIntExtra("REMOVED", 0);
-        labName = getIntent().getStringExtra("LAB_NAME");
+        equipmentType =
+                getIntent().getStringExtra("TYPE");
+
+        labName =
+                getIntent().getStringExtra("LAB_NAME");
+
+        initializeViews();
+        initializeRecyclerView();
+
+        loadEquipmentData();
+    }
+
+    private void initializeViews() {
 
         viewType = findViewById(R.id.equipmentType);
         viewTotal = findViewById(R.id.equipmentTotal);
@@ -67,182 +87,203 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
         viewMaintenance = findViewById(R.id.equipmentMaintenance);
         viewRemoved = findViewById(R.id.equipmentRemoved);
 
-        viewType.setText(equipmentType);
-        viewTotal.setText(total + " Equipment");
-        viewInLab.setText(String.valueOf(inLab));
-        viewBorrowed.setText(String.valueOf(borrowed));
-        viewMaintenance.setText(String.valueOf(underMaintenance));
-        viewRemoved.setText(String.valueOf(removed));
+        viewType.setText(
+                equipmentType != null
+                        ? equipmentType
+                        : "Unknown"
+        );
+    }
+
+    private void initializeRecyclerView() {
 
         equipmentList = new ArrayList<>();
-        adapter = new EquipmentAdapter(EquipmentDetailsActivity.this, equipmentList);
 
-        recyclerView = findViewById(R.id.recyclerEquipments);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new EquipmentAdapter(
+                this,
+                equipmentList
+        );
+
+        recyclerView = findViewById(
+                R.id.recyclerEquipments
+        );
+
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
         recyclerView.setAdapter(adapter);
-
-        loadEquipmentData(equipmentType);
     }
 
-    private void loadEquipmentData(String equipmentType) {
+    private void loadEquipmentData() {
 
-        if (labName != null){
+        if (equipmentType == null || equipmentType.isEmpty()) {
+            Toast.makeText(
+                    this,
+                    "Equipment type is missing",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
 
-            db.collection("equipment")
-                    .whereEqualTo("type", equipmentType)
-                    .whereEqualTo("lab", labName)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
+        if (labName != null && !labName.isEmpty()) {
 
-                        equipmentList.clear();
-
-                        for (DocumentSnapshot doc : queryDocumentSnapshots){
-
-                            Equipment equipment = doc.toObject(Equipment.class);
-                            equipmentList.add(equipment);
-                        }
-                        equipmentList.sort((a,b) ->
-                                a.getQrId().compareToIgnoreCase(b.getQrId()));
-                        adapter.notifyDataSetChanged();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+            loadEquipmentForLab();
 
         } else {
 
-            db.collection("equipment")
-                    .whereEqualTo("type", equipmentType)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-
-                        equipmentList.clear();
-
-                        for (DocumentSnapshot doc : queryDocumentSnapshots){
-
-                            Equipment equipment = doc.toObject(Equipment.class);
-                            equipmentList.add(equipment);
-                        }
-                        equipmentList.sort((a,b) ->
-                                a.getQrId().compareToIgnoreCase(b.getQrId()));
-                        adapter.notifyDataSetChanged();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+            loadAllEquipmentOfType();
         }
     }
 
-    private void updateSummary() {
+    private void loadEquipmentForLab() {
 
-        if (labName != null){
+        db.collection("equipment")
+                .whereEqualTo("type", equipmentType)
+                .whereEqualTo("lab", labName)
+                .get()
+                .addOnSuccessListener(snapshot -> {
 
-            db.collection("equipment")
-                    .whereEqualTo("type", equipmentType)
-                    .whereEqualTo("lab", labName)
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
+                    processEquipmentData(snapshot);
+                })
+                .addOnFailureListener(e -> {
 
-                        int total = 0;
-                        int inLab = 0;
-                        int borrowed = 0;
-                        int maintenance = 0;
-                        int removed = 0;
+                    Toast.makeText(
+                            this,
+                            e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+    }
 
-                        for (DocumentSnapshot doc : snapshot) {
+    private void loadAllEquipmentOfType() {
 
-                            total++;
-                            String state = doc.getString("state");
+        db.collection("equipment")
+                .whereEqualTo("type", equipmentType)
+                .get()
+                .addOnSuccessListener(snapshot -> {
 
-                            if (state == null)
-                                continue;
+                    processEquipmentData(snapshot);
+                })
+                .addOnFailureListener(e -> {
 
-                            switch(state){
+                    Toast.makeText(
+                            this,
+                            e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+    }
 
-                                case "In Lab":
-                                    inLab++;
-                                    break;
+    private void processEquipmentData(QuerySnapshot snapshot) {
 
-                                case "Borrowed":
-                                    borrowed++;
-                                    break;
+        equipmentList.clear();
 
-                                case "Under Maintenance":
-                                    maintenance++;
-                                    break;
+        int total = 0;
+        int inLab = 0;
+        int borrowed = 0;
+        int maintenance = 0;
+        int removed = 0;
 
-                                case "Removed":
-                                    removed++;
-                                    break;
-                            }
-                        }
+        for (DocumentSnapshot doc : snapshot.getDocuments()) {
 
-                        viewTotal.setText(total + " Equipment");
-                        viewInLab.setText(String.valueOf(inLab));
-                        viewBorrowed.setText(String.valueOf(borrowed));
-                        viewMaintenance.setText(String.valueOf(maintenance));
-                        viewRemoved.setText(String.valueOf(removed));
+            Equipment equipment =
+                    doc.toObject(Equipment.class);
 
-                    });
+            if (equipment == null) {
+                continue;
+            }
 
-        } else {
+            equipmentList.add(equipment);
 
-            db.collection("equipment")
-                    .whereEqualTo("type", equipmentType)
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
+            total++;
 
-                        int total = 0;
-                        int inLab = 0;
-                        int borrowed = 0;
-                        int maintenance = 0;
-                        int removed = 0;
+            String state = equipment.getState();
 
-                        for (DocumentSnapshot doc : snapshot) {
+            if (state == null) {
+                continue;
+            }
 
-                            total++;
-                            String state = doc.getString("state");
+            switch (state) {
 
-                            if (state == null)
-                                continue;
+                case "In Lab":
+                    inLab++;
+                    break;
 
-                            switch(state){
+                case "Borrowed":
+                    borrowed++;
+                    break;
 
-                                case "In Lab":
-                                    inLab++;
-                                    break;
+                case "Under Maintenance":
+                    maintenance++;
+                    break;
 
-                                case "Borrowed":
-                                    borrowed++;
-                                    break;
-
-                                case "Under Maintenance":
-                                    maintenance++;
-                                    break;
-
-                                case "Removed":
-                                    removed++;
-                                    break;
-                            }
-                        }
-
-                        viewTotal.setText(total + " Equipment");
-                        viewInLab.setText(String.valueOf(inLab));
-                        viewBorrowed.setText(String.valueOf(borrowed));
-                        viewMaintenance.setText(String.valueOf(maintenance));
-                        viewRemoved.setText(String.valueOf(removed));
-
-                    });
+                case "Removed":
+                    removed++;
+                    break;
+            }
         }
+
+        equipmentList.sort((a, b) -> {
+
+            String qrA = a.getQrId();
+            String qrB = b.getQrId();
+
+            if (qrA == null) {
+                return 1;
+            }
+
+            if (qrB == null) {
+                return -1;
+            }
+
+            return qrA.compareToIgnoreCase(qrB);
+        });
+
+        updateSummary(
+                total,
+                inLab,
+                borrowed,
+                maintenance,
+                removed
+        );
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private void updateSummary(
+            int total,
+            int inLab,
+            int borrowed,
+            int maintenance,
+            int removed) {
+
+        viewTotal.setText(
+                total + " Equipment"
+        );
+
+        viewInLab.setText(
+                String.valueOf(inLab)
+        );
+
+        viewBorrowed.setText(
+                String.valueOf(borrowed)
+        );
+
+        viewMaintenance.setText(
+                String.valueOf(maintenance)
+        );
+
+        viewRemoved.setText(
+                String.valueOf(removed)
+        );
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
 
-        if (equipmentType != null){
-            loadEquipmentData(equipmentType);
-            updateSummary();
+        if (db != null && equipmentType != null) {
+            loadEquipmentData();
         }
     }
 }

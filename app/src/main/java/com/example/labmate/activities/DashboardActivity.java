@@ -35,21 +35,24 @@ public class DashboardActivity extends AppCompatActivity {
         bottomNavigation.setOnItemSelectedListener(item -> {
 
             int id = item.getItemId();
+            Fragment fragment = null;
 
             if (id == R.id.nav_home) {
-                loadFragment(new HomeFragment());
-                return true;
+                fragment = new HomeFragment();
             }
             else if (id == R.id.nav_equipment) {
-                loadFragment(new EquipmentFragment());
-                return true;
+                fragment = new EquipmentFragment();
             }
             else if (id == R.id.nav_profile) {
-                loadFragment(new ProfileFragment());
-                return true;
+                fragment = new ProfileFragment();
             }
             else if (id == R.id.nav_lab) {
-                loadFragment(new LabsFragment());
+                fragment = new LabsFragment();
+            }
+
+            if (fragment != null) {
+
+                loadFragment(fragment);
                 return true;
             }
 

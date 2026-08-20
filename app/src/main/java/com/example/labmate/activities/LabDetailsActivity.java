@@ -8,135 +8,229 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.labmate.R;
 import com.example.labmate.adapters.EquipmentSummaryAdapter;
 import com.example.labmate.models.EquipmentSummary;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.labmate.states.LabDetailsState;
+import com.example.labmate.viewmodels.LabDetailsViewModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class LabDetailsActivity extends AppCompatActivity {
+public class LabDetailsActivity
+        extends AppCompatActivity {
 
     private TextView viewName;
     private TextView viewInCharge;
-    private TextView viewlocation;
+    private TextView viewLocation;
     private TextView equipmentTotal;
+
     private RecyclerView recyclerView;
+
     private EquipmentSummaryAdapter adapter;
-    private ArrayList<EquipmentSummary> equipmentSummaryList;
-    private FirebaseFirestore db;
+
+    private ArrayList<EquipmentSummary>
+            equipmentSummaryList;
+
+    private LabDetailsViewModel viewModel;
+
     private String labName;
     private String labInCharge;
     private String labLocation;
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(
+            Bundle savedInstanceState
+    ) {
+
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_lab_details);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        labName = getIntent().getStringExtra("LAB_NAME");
-        labInCharge = getIntent().getStringExtra("LAB_IN_CHARGE");
-        labLocation = getIntent().getStringExtra("LAB_LOCATION");
+        setContentView(
+                R.layout.activity_lab_details
+        );
 
-        viewName = findViewById(R.id.labName);
-        viewInCharge = findViewById(R.id.personInCharge);
-        viewlocation = findViewById(R.id.actLocation);
-        equipmentTotal = findViewById(R.id.equipmentTotal);
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
 
-        viewName.setText(labName);
-        viewInCharge.setText("In Charge: " + labInCharge);
-        viewlocation.setText("Location: " + labLocation);
+                    Insets systemBars =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
 
-        db = FirebaseFirestore.getInstance();
-        recyclerView = findViewById(R.id.recyclerEquipments);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
 
-        equipmentSummaryList = new ArrayList<>();
-        adapter = new EquipmentSummaryAdapter(this, equipmentSummaryList, labName);
+                    return insets;
+                }
+        );
 
-        recyclerView.setAdapter(adapter);
-        loadEquipmentSummary(labName);
+        getLabData();
+        initializeViews();
+        setupRecyclerView();
+        setupViewModel();
     }
 
-    public void loadEquipmentSummary(String labName){
+    private void getLabData() {
 
-        db.collection("equipment")
-                .whereEqualTo("lab", labName)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+        labName =
+                getIntent().getStringExtra(
+                        "LAB_NAME"
+                );
 
-                    equipmentSummaryList.clear();
+        labInCharge =
+                getIntent().getStringExtra(
+                        "LAB_IN_CHARGE"
+                );
 
-                    int totalEquipment = queryDocumentSnapshots.size();
-                    equipmentTotal.setText("Total Equipment: " + totalEquipment);
+        labLocation =
+                getIntent().getStringExtra(
+                        "LAB_LOCATION"
+                );
+    }
 
-                    HashMap<String, EquipmentSummary> map = new HashMap<>();
+    private void initializeViews() {
 
-                    for (DocumentSnapshot doc : queryDocumentSnapshots){
+        viewName =
+                findViewById(R.id.labName);
 
-                        String type = doc.getString("type");
-                        String state = doc.getString("state");
+        viewInCharge =
+                findViewById(
+                        R.id.personInCharge
+                );
 
-                        if (type == null) continue;
+        viewLocation =
+                findViewById(
+                        R.id.actLocation
+                );
 
-                        EquipmentSummary summary = map.get(type);
+        equipmentTotal =
+                findViewById(
+                        R.id.equipmentTotal
+                );
 
-                        if (summary == null){
-                            summary = new EquipmentSummary(type);
-                            map.put(type, summary);
-                        }
+        viewName.setText(
+                labName
+        );
 
-                        summary.increaseTotal();
+        viewInCharge.setText(
+                "In Charge: " + labInCharge
+        );
 
-                        if (state == null) continue;
+        viewLocation.setText(
+                "Location: " + labLocation
+        );
+    }
 
-                        switch (state){
-                            case "In Lab":
-                                summary.increaseInLab();
-                                break;
+    private void setupRecyclerView() {
 
-                            case "Borrowed":
-                                summary.increaseBorrowed();
-                                break;
+        recyclerView =
+                findViewById(
+                        R.id.recyclerEquipments
+                );
 
-                            case "Under Maintenance":
-                                summary.increaseMaintenance();
-                                break;
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
 
-                            case "Removed":
-                                summary.increaseRemoved();
-                                break;
-                        }
-                    }
+        equipmentSummaryList =
+                new ArrayList<>();
 
-                    equipmentSummaryList.addAll(map.values());
-                    equipmentSummaryList.sort((a,b) ->
-                            a.getType().compareToIgnoreCase(b.getType()));
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+        adapter =
+                new EquipmentSummaryAdapter(
+                        this,
+                        equipmentSummaryList,
+                        labName
+                );
+
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void setupViewModel() {
+
+        viewModel =
+                new ViewModelProvider(this)
+                        .get(
+                                LabDetailsViewModel.class
+                        );
+
+        viewModel.getState()
+                .observe(
+                        this,
+                        this::handleState
+                );
+    }
+
+    private void handleState(
+            LabDetailsState state
+    ) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case LOADING:
+                // ProgressBar later.
+                break;
+
+            case SUCCESS:
+
+                equipmentTotal.setText(
+                        "Total Equipment: "
+                                + state.getTotalEquipment()
+                );
+
+                equipmentSummaryList.clear();
+
+                if (state.getSummaries() != null) {
+
+                    equipmentSummaryList.addAll(
+                            state.getSummaries()
+                    );
+                }
+
+                adapter.notifyDataSetChanged();
+
+                break;
+
+            case ERROR:
+
+                Toast.makeText(
+                        this,
+                        state.getMessage() != null
+                                ? state.getMessage()
+                                : "Failed to load equipment.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                break;
+
+            case IDLE:
+            default:
+                break;
+        }
     }
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
-        if (labName != null) {
-            loadEquipmentSummary(labName);
+        if (viewModel != null
+                && labName != null) {
+
+            viewModel.loadEquipmentSummary(
+                    labName
+            );
         }
     }
 }

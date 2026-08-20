@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LabMate">
         <activity
+            android:name=".activities.RemoveEquipmentActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.QRScannerActivity"
             android:exported="false" />
         <activity

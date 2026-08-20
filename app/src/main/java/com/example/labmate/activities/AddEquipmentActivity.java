@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.example.labmate.utils.QRGenerator;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -55,7 +56,6 @@ public class AddEquipmentActivity extends AppCompatActivity {
         });
 
         db = FirebaseFirestore.getInstance();
-
         equipmentQR = findViewById(R.id.equipmentQR);
         equipmentIdText = findViewById(R.id.equipmentIdText);
 
@@ -90,7 +90,6 @@ public class AddEquipmentActivity extends AppCompatActivity {
         });
 
         typeDropdown.setOnItemClickListener((parent, view, position, id) -> {
-
             String selected = parent.getItemAtPosition(position).toString();
             if (selected.equals("+ Add New Type")){
                 showAppTypeDialog();
@@ -106,7 +105,6 @@ public class AddEquipmentActivity extends AppCompatActivity {
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 equipmentName.setText("");
                 equipmentModel.setText("");
                 equipmentLab.setText(null);
@@ -119,7 +117,6 @@ public class AddEquipmentActivity extends AppCompatActivity {
         button_add_equipment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String name = equipmentName.getText().toString().trim().replaceAll("\\s+", " ");
                 String model = equipmentModel.getText().toString().trim().replaceAll("\\s+", " ");
                 String lab = equipmentLab.getText().toString();
@@ -146,7 +143,6 @@ public class AddEquipmentActivity extends AppCompatActivity {
                         .add(equipment)
                         .addOnSuccessListener(unused -> {
                             Toast.makeText(getApplicationContext(), "Equipment Added Successfully", Toast.LENGTH_LONG).show();
-
                             equipmentName.setText("");
                             equipmentModel.setText("");
                             equipmentLab.setText(null);
@@ -157,25 +153,20 @@ public class AddEquipmentActivity extends AppCompatActivity {
                         .addOnFailureListener(e -> {
                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         });
-
             }
         });
-
         loadLabs();
         generateEquipmentId();
     }
 
     private void showAppTypeDialog() {
-
         EditText input = new EditText(this);
         input.setHint("Equipment Type");
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Add New Equipment Type")
                 .setCancelable(false)
                 .setView(input)
                 .setPositiveButton("Add", (dialog, which) -> {
-
                     String newType = input.getText().toString().trim();
                     if (!newType.isEmpty()){
                         saveNewType(newType);
@@ -188,15 +179,12 @@ public class AddEquipmentActivity extends AppCompatActivity {
     }
 
     private void saveNewType(String newType) {
-
         Map<String, Object> data = new HashMap<>();
         data.put("typeName", newType);
-
         db.collection("equipmentTypes")
                 .add(data)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(getApplicationContext(), "Type Added Successfully", Toast.LENGTH_LONG).show();
-
                     loadEquipmentTypes();
                     typeDropdown.setText(newType, false);
                 })
@@ -209,17 +197,13 @@ public class AddEquipmentActivity extends AppCompatActivity {
         db.collection("equipmentTypes")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-
                     equipmentTypes.clear();
-
                     for (DocumentSnapshot doc : snapshot){
-
                         String type = doc.getString("typeName");
                         if (type != null){
                             equipmentTypes.add(type);
                         }
                     }
-
                     equipmentTypes.add("+ Add New Type");
                     typeAdapter.notifyDataSetChanged();
                 })
@@ -229,15 +213,12 @@ public class AddEquipmentActivity extends AppCompatActivity {
     }
 
     public void loadLabs(){
-
         db.collection("labs")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     labNames.clear();
-
                     for (DocumentSnapshot doc : queryDocumentSnapshots){
                         String labName = doc.getString("labName");
-
                         if (labName != null){
                             labNames.add(labName);
                         }
@@ -253,32 +234,24 @@ public class AddEquipmentActivity extends AppCompatActivity {
         db.collection("equipment")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-
                     int count = snapshot.size() + 1;
-                    qrId = String.format("EQ%06d", count);
-
+                    qrId = QRGenerator.generateId(count);
                     Bitmap qrBitmap = generateQRCode(qrId);
-
                     equipmentQR.setImageBitmap(qrBitmap);
                     equipmentIdText.setText(qrId);
-
                 });
     }
 
     private Bitmap generateQRCode(String text){
         try {
             BitMatrix matrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 400, 400);
-
             Bitmap bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565);
-
             for (int x = 0; x < 400; x++){
                 for (int y = 0; y < 400; y++){
-
                     bitmap.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
             return bitmap;
-
         } catch (Exception e){
             return null;
         }

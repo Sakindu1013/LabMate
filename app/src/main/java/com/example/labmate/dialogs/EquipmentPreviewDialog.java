@@ -1,7 +1,6 @@
 package com.example.labmate.dialogs;
 
 import android.content.Context;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;

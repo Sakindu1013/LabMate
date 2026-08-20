@@ -12,141 +12,253 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.labmate.R;
 import com.example.labmate.dialogs.EquipmentPreviewDialog;
+import com.example.labmate.repositories.EquipmentRepository;
+import com.example.labmate.utils.UserSession;
+import com.example.labmate.viewmodels.EquipmentViewModel;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class BorrowEquipmentActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db;
+    private EquipmentViewModel viewModel;
+    private EquipmentRepository equipmentRepository;
+    private UserSession userSession;
+
     private EditText equipmentQR;
     private Button borrowEquipment;
     private Button btnClear;
     private Button btnQR;
 
-    private final ActivityResultLauncher<Intent> scannerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result ->{
+    private final ActivityResultLauncher<Intent> scannerLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
 
-        if (result.getResultCode() == RESULT_OK && result.getData() != null){
-            String qrId = result.getData().getStringExtra("QR_ID");
-            loadEquipmentDetails(qrId);
-        }
-    });
+                        if (result.getResultCode() == RESULT_OK
+                                && result.getData() != null) {
+
+                            String qrId =
+                                    result.getData()
+                                            .getStringExtra("QR_ID");
+
+                            if (qrId != null
+                                    && !qrId.trim().isEmpty()) {
+
+                                equipmentQR.setText(qrId);
+
+                                loadEquipmentDetails(qrId);
+                            }
+                        }
+                    }
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_borrow_equipment);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        db = FirebaseFirestore.getInstance();
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
 
-        equipmentQR = findViewById(R.id.equipmentQR);
+                    Insets systemBars =
+                            insets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
 
-        borrowEquipment = findViewById(R.id.btn_borrow_equipment);
-        btnClear = findViewById(R.id.btn_clear);
-        btnQR = findViewById(R.id.btn_scan_qr);
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
 
+                    return insets;
+                }
+        );
+
+        viewModel =
+                new ViewModelProvider(this)
+                        .get(EquipmentViewModel.class);
+
+        equipmentRepository =
+                new EquipmentRepository();
+
+        userSession =
+                new UserSession(this);
+
+        equipmentQR =
+                findViewById(R.id.equipmentQR);
+
+        borrowEquipment =
+                findViewById(R.id.btn_borrow_equipment);
+
+        btnClear =
+                findViewById(R.id.btn_clear);
+
+        btnQR =
+                findViewById(R.id.btn_scan_qr);
+
+        observeViewModel();
+
+        setupListeners();
+    }
+
+    private void observeViewModel() {
+
+        viewModel.getMessage()
+                .observe(this, message -> {
+
+                    if (message == null
+                            || message.trim().isEmpty()) {
+                        return;
+                    }
+
+                    Toast.makeText(
+                            this,
+                            message,
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    if (message.equals(
+                            "Equipment Successfully Borrowed")) {
+
+                        finish();
+                    }
+                });
+    }
+
+    private void setupListeners() {
+
+        // Scan QR code
         btnQR.setOnClickListener(v -> {
-            Intent qrIntent = new Intent(BorrowEquipmentActivity.this, QRScannerActivity.class);
+
+            Intent qrIntent =
+                    new Intent(
+                            BorrowEquipmentActivity.this,
+                            QRScannerActivity.class
+                    );
+
             scannerLauncher.launch(qrIntent);
         });
 
+        // Borrow equipment
         borrowEquipment.setOnClickListener(v -> {
 
-            String qrId = equipmentQR.getText().toString().trim();
+            String qrId =
+                    equipmentQR
+                            .getText()
+                            .toString()
+                            .trim();
 
-            db.collection("equipment")
-                    .whereEqualTo("qrId", qrId)
-                    .get()
-                    .addOnSuccessListener(snapshot -> {
-                        if (!snapshot.isEmpty()){
+            if (qrId.isEmpty()) {
 
-                            String state = snapshot.getDocuments().get(0).getString("state");
+                equipmentQR.setError(
+                        "Enter Equipment ID"
+                );
 
-                            if ("Borrowed".equals(state)) {
-                                Toast.makeText(this, "This equipment is already borrowed.", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+                return;
+            }
 
-                            if ("Under Maintenance".equals(state) || "Removed".equals(state)) {
-                                Toast.makeText(this, "This equipment cannot be borrowed.", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+            String userId =
+                    userSession.getUserId();
 
-                            String docID = snapshot.getDocuments().get(0).getId();
+            if (userId.isEmpty()) {
 
-                            db.collection("equipment")
-                                    .document(docID)
-                                    .update("state", "Borrowed")
-                                    .addOnSuccessListener(unused -> {
-                                        Toast.makeText(getApplicationContext(), "Equipment Successfully Borrowed", Toast.LENGTH_LONG).show();
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                                    });
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Equipment Not Found", Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();;
-                    });
+                Toast.makeText(
+                        this,
+                        "User information is missing. Please log in again.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
+
+            viewModel.borrowEquipment(
+                    qrId,
+                    userId
+            );
         });
 
-        btnClear.setOnClickListener(v -> {
-
-            equipmentQR.setText("");
-        });
-
+        // Clear
+        btnClear.setOnClickListener(v ->
+                equipmentQR.setText("")
+        );
     }
 
-    private void loadEquipmentDetails(String qrId){
+    private void loadEquipmentDetails(String qrId) {
 
-        db.collection("equipment")
-                .whereEqualTo("qrId", qrId)
-                .get()
-                .addOnSuccessListener(snapshot -> {
+        equipmentRepository.findByQrId(
+                qrId,
 
-                    if (!snapshot.isEmpty()){
+                snapshot -> {
 
-                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                    if (snapshot.isEmpty()) {
 
-                        String name = doc.getString("equipmentName");
-                        String model = doc.getString("equipmentModel");
-                        String lab = doc.getString("lab");
-                        String state = doc.getString("state");
+                        Toast.makeText(
+                                this,
+                                "Equipment Not Found",
+                                Toast.LENGTH_LONG
+                        ).show();
 
-                        EquipmentPreviewDialog.show(this, name, model, lab, state, "Borrow", () -> borrowEquipment(doc.getId()));
-
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Equipment Not Found", Toast.LENGTH_LONG).show();
+                        return;
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-    }
 
-    private void borrowEquipment(String documentId){
+                    DocumentSnapshot doc =
+                            snapshot.getDocuments().get(0);
 
-        db.collection("equipment")
-                .document(documentId)
-                .update("state","Borrowed")
-                .addOnSuccessListener(unused -> {
+                    String name =
+                            doc.getString("equipmentName");
 
-                    Toast.makeText(this, "Equipment Successfully Borrowed", Toast.LENGTH_LONG).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                    String model =
+                            doc.getString("equipmentModel");
+
+                    String lab =
+                            doc.getString("lab");
+
+                    String state =
+                            doc.getString("state");
+
+                    EquipmentPreviewDialog.show(
+                            this,
+                            name,
+                            model,
+                            lab,
+                            state,
+                            "Borrow",
+                            () -> {
+
+                                String userId =
+                                        userSession.getUserId();
+
+                                if (userId.isEmpty()) {
+
+                                    Toast.makeText(
+                                            this,
+                                            "User information is missing. Please log in again.",
+                                            Toast.LENGTH_LONG
+                                    ).show();
+
+                                    return;
+                                }
+
+                                viewModel.borrowEquipment(
+                                        qrId,
+                                        userId
+                                );
+                            }
+                    );
+                },
+
+                e -> Toast.makeText(
+                        this,
+                        e.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show()
+        );
     }
 }

@@ -33,18 +33,19 @@
             android:layout_marginBottom="20dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:id="@+id/tilEquipment"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/equipment_qr_id"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="20dp"
+            android:hint="@string/select_equipment">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/equipmentQR"
+            <AutoCompleteTextView
+                android:id="@+id/actEquipmentQR"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords"
-                android:textColor="@color/text_primary"/>
+                android:inputType="none"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

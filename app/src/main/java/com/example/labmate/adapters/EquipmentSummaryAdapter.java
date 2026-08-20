@@ -16,68 +16,132 @@ import com.example.labmate.models.EquipmentSummary;
 
 import java.util.ArrayList;
 
-public class EquipmentSummaryAdapter extends RecyclerView.Adapter<EquipmentSummaryAdapter.ViewHolder> {
+public class EquipmentSummaryAdapter
+        extends RecyclerView.Adapter<EquipmentSummaryAdapter.ViewHolder> {
 
-    private Context context;
-    private ArrayList<EquipmentSummary> equipments;
-    private String labName;
+    private final Context context;
+    private final ArrayList<EquipmentSummary> equipmentList;
+    private final String labName;
 
-    public EquipmentSummaryAdapter(Context context, ArrayList<EquipmentSummary> equipments, String labName){
+    public EquipmentSummaryAdapter(
+            Context context,
+            ArrayList<EquipmentSummary> equipmentList,
+            String labName) {
+
         this.context = context;
-        this.equipments = equipments;
+        this.equipmentList = equipmentList;
         this.labName = labName;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+    public ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
 
-        View view = LayoutInflater.from(context).inflate(R.layout.item_equipment, parent, false);
+        View view = LayoutInflater.from(context)
+                .inflate(
+                        R.layout.item_equipment,
+                        parent,
+                        false
+                );
+
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position){
-        EquipmentSummary equipment = equipments.get(position);
+    public void onBindViewHolder(
+            @NonNull ViewHolder holder,
+            int position) {
+
+        EquipmentSummary equipment =
+                equipmentList.get(position);
 
         holder.type.setText(equipment.getType());
-        holder.total.setText("Total: " + equipment.getTotal());
-        holder.inLab.setText("In Lab: " + equipment.getInLab());
-        holder.borrowed.setText("Borrowed: " + equipment.getBorrowed());
-        holder.maintenance.setText("Under Maintenance: " + equipment.getMaintenance());
-        holder.removed.setText("Removed: " + equipment.getRemoved());
+
+        holder.total.setText(
+                "Total: " + equipment.getTotal()
+        );
+
+        holder.inLab.setText(
+                "In Lab: " + equipment.getInLab()
+        );
+
+        holder.borrowed.setText(
+                "Borrowed: " + equipment.getBorrowed()
+        );
+
+        holder.maintenance.setText(
+                "Under Maintenance: "
+                        + equipment.getMaintenance()
+        );
+
+        holder.removed.setText(
+                "Removed: " + equipment.getRemoved()
+        );
 
         holder.itemView.setOnClickListener(v -> {
-            Intent equipmentIntent = new Intent(context, EquipmentDetailsActivity.class);
-            equipmentIntent.putExtra("TYPE",equipment.getType());
-            equipmentIntent.putExtra("TOTAL",equipment.getTotal());
-            equipmentIntent.putExtra("IN_LAB",equipment.getInLab());
-            equipmentIntent.putExtra("BORROWED",equipment.getBorrowed());
-            equipmentIntent.putExtra("MAINTENANCE",equipment.getMaintenance());
-            equipmentIntent.putExtra("REMOVED",equipment.getRemoved());
-            equipmentIntent.putExtra("LAB_NAME", labName);
-            context.startActivity(equipmentIntent);
+
+            Intent intent = new Intent(
+                    context,
+                    EquipmentDetailsActivity.class
+            );
+
+            intent.putExtra(
+                    "TYPE",
+                    equipment.getType()
+            );
+
+            intent.putExtra(
+                    "LAB_NAME",
+                    labName
+            );
+
+            context.startActivity(intent);
         });
     }
 
     @Override
-    public int getItemCount(){
-        return equipments.size();
+    public int getItemCount() {
+        return equipmentList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder
+            extends RecyclerView.ViewHolder {
 
-        TextView type, total, inLab, borrowed, maintenance, removed;
+        TextView type;
+        TextView total;
+        TextView inLab;
+        TextView borrowed;
+        TextView maintenance;
+        TextView removed;
 
-        public ViewHolder(View itemView){
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            type = itemView.findViewById(R.id.equipmentType);
-            total = itemView.findViewById(R.id.equipmentTotal);
-            inLab = itemView.findViewById(R.id.equipmentInLab);
-            borrowed = itemView.findViewById(R.id.equipmentBorrowed);
-            maintenance = itemView.findViewById(R.id.equipmentMaintenance);
-            removed = itemView.findViewById(R.id.equipmentRemoved);
+            type = itemView.findViewById(
+                    R.id.equipmentType
+            );
+
+            total = itemView.findViewById(
+                    R.id.equipmentTotal
+            );
+
+            inLab = itemView.findViewById(
+                    R.id.equipmentInLab
+            );
+
+            borrowed = itemView.findViewById(
+                    R.id.equipmentBorrowed
+            );
+
+            maintenance = itemView.findViewById(
+                    R.id.equipmentMaintenance
+            );
+
+            removed = itemView.findViewById(
+                    R.id.equipmentRemoved
+            );
         }
     }
 }

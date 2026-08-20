@@ -1,123 +1,239 @@
 package com.example.labmate.fragments;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.content.Intent;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.labmate.R;
 import com.example.labmate.activities.BorrowEquipmentActivity;
 import com.example.labmate.activities.ManageInventoryActivity;
 import com.example.labmate.activities.ManageUserActivity;
 import com.example.labmate.activities.ReturnEquipmentActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-
+import com.example.labmate.states.HomeState;
+import com.example.labmate.viewmodels.HomeViewModel;
 
 public class HomeFragment extends Fragment {
+
     private TextView txtName;
     private TextView txtRole;
+
     private Button buttonBorrow;
     private Button buttonReturn;
     private Button buttonManageInventory;
     private Button buttonManageUsers;
 
+    private HomeViewModel homeViewModel;
+
     public HomeFragment() {
-
     }
-
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
 
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_home,
+                container,
+                false
+        );
 
-        txtName = view.findViewById(R.id.tvName);
-        txtRole = view.findViewById(R.id.tvRole);
+        initializeViews(view);
+        setupViewModel();
+        setupListeners();
 
-        buttonBorrow = view.findViewById(R.id.equipment_request);
-        buttonReturn = view.findViewById(R.id.equipment_return);
-        buttonManageInventory = view.findViewById(R.id.manage_inventory);
-        buttonManageUsers = view.findViewById(R.id.manage_users);
+        return view;
+    }
 
-        buttonManageInventory.setVisibility(View.GONE);
-        buttonManageUsers.setVisibility(View.GONE);
+    @Override
+    public void onViewCreated(
+            View view,
+            Bundle savedInstanceState
+    ) {
+        super.onViewCreated(
+                view,
+                savedInstanceState
+        );
+
+        homeViewModel.loadUserData();
+    }
+
+    private void initializeViews(View view) {
+
+        txtName =
+                view.findViewById(R.id.tvName);
+
+        txtRole =
+                view.findViewById(R.id.tvRole);
+
+        buttonBorrow =
+                view.findViewById(
+                        R.id.equipment_request
+                );
+
+        buttonReturn =
+                view.findViewById(
+                        R.id.equipment_return
+                );
+
+        buttonManageInventory =
+                view.findViewById(
+                        R.id.manage_inventory
+                );
+
+        buttonManageUsers =
+                view.findViewById(
+                        R.id.manage_users
+                );
+
+        buttonManageInventory.setVisibility(
+                View.GONE
+        );
+
+        buttonManageUsers.setVisibility(
+                View.GONE
+        );
+    }
+
+    private void setupViewModel() {
+
+        homeViewModel =
+                new ViewModelProvider(this)
+                        .get(HomeViewModel.class);
+
+        homeViewModel.getHomeState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        this::handleHomeState
+                );
+    }
+
+    private void setupListeners() {
 
         buttonBorrow.setOnClickListener(v -> {
-            Intent borrowIntent = new Intent(requireContext(), BorrowEquipmentActivity.class);
-            startActivity(borrowIntent);
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            BorrowEquipmentActivity.class
+                    );
+
+            startActivity(intent);
         });
 
-
         buttonReturn.setOnClickListener(v -> {
-            Intent returnIntent = new Intent(requireContext(), ReturnEquipmentActivity.class);
-            startActivity(returnIntent);
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            ReturnEquipmentActivity.class
+                    );
+
+            startActivity(intent);
         });
 
         buttonManageInventory.setOnClickListener(v -> {
-            Intent inventoryIntent = new Intent(requireContext(), ManageInventoryActivity.class);
-            startActivity(inventoryIntent);
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            ManageInventoryActivity.class
+                    );
+
+            startActivity(intent);
         });
 
         buttonManageUsers.setOnClickListener(v -> {
-            Intent usersIntent = new Intent(requireContext(), ManageUserActivity.class);
-            startActivity(usersIntent);
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            ManageUserActivity.class
+                    );
+
+            startActivity(intent);
         });
-
-        loadUserData();
-        return view;
     }
-    private void loadUserData(){
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
+    private void handleHomeState(
+            HomeState state
+    ) {
 
-        if(user == null){
+        if (state == null) {
             return;
         }
-        String uid = user.getUid();
 
-        db.collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if(documentSnapshot.exists()){
+        switch (state.getStatus()) {
 
-                        String name = documentSnapshot.getString("name");
-                        String role = documentSnapshot.getString("role");
+            case LOADING:
+                // ProgressBar can be added here later.
+                break;
 
-                        txtName.setText(name != null ? name : "Unknown");
-                        txtRole.setText(role != null ? role : "No Role");
+            case SUCCESS:
+                displayUserData(state);
+                break;
 
-                        SharedPreferences prefs = getActivity().getSharedPreferences("UserPrefs", 0);
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putString("name", name);
-                        editor.putString("role", role);
-                        editor.apply();
+            case ERROR:
+                showError(state.getMessage());
+                break;
 
-                        if("Admin".equals(role) || "Academic Staff".equals(role) || "Non-Academic Staff".equals(role)) {
-                            buttonManageInventory.setVisibility(View.VISIBLE);
-                        }
-                        
-                        if("Admin".equals(role)) {
-                            buttonManageUsers.setVisibility(View.VISIBLE);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load Data", Toast.LENGTH_LONG).show();
-                });
+            case IDLE:
+            default:
+                break;
+        }
     }
 
+    private void displayUserData(
+            HomeState state
+    ) {
+
+        txtName.setText(
+                state.getName()
+        );
+
+        txtRole.setText(
+                state.getRole()
+        );
+
+        if (state.canManageInventory()) {
+
+            buttonManageInventory.setVisibility(
+                    View.VISIBLE
+            );
+        }
+
+        if (state.isAdmin()) {
+
+            buttonManageUsers.setVisibility(
+                    View.VISIBLE
+            );
+        }
+    }
+
+    private void showError(String message) {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        Toast.makeText(
+                requireContext(),
+                message != null
+                        ? message
+                        : "Failed to load data.",
+                Toast.LENGTH_LONG
+        ).show();
+    }
 }

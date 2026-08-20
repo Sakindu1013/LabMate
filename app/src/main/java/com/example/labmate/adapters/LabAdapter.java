@@ -86,4 +86,9 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
             edit.setVisibility(View.GONE);
         }
     }
+
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+        notifyDataSetChanged();
+    }
 }

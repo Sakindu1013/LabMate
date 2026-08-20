@@ -54,4 +54,9 @@
     <string name="equipment_model">Equipment Model</string>
     <string name="borrow_equipment">Borrow Equipment</string>
     <string name="scan_qr">Scan QR</string>
+    <string name="remove_equipment">Remove Equipment</string>
+    <string name="enter_equipment_id_to_borrow_lab_equipments">Enter Equipment ID to Borrow LAB Equipments</string>
+    <string name="enter_equipment_id_to_remove_the_lab_equipment">Enter Equipment ID to Remove the LAB Equipment</string>
+    <string name="search_equipment">Search Equipment</string>
+    <string name="select_equipment">Select Equipment</string>
 </resources>
