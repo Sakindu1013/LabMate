@@ -3,7 +3,7 @@ package com.example.labmate.models;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 
-public class Borrowing {
+public class BorrowingRequest {
 
     @Exclude
     private String id;
@@ -11,9 +11,7 @@ public class Borrowing {
     private String equipmentId;
     private String userId;
 
-    private Timestamp createdAt;
-    private Timestamp borrowedAt;
-    private Timestamp returnedAt;
+    private Timestamp requestedAt;
 
     private String status;
 
@@ -24,42 +22,39 @@ public class Borrowing {
     private String equipmentModel;
 
     @Exclude
-    private String lab;
+    private String equipmentQrId;
 
     @Exclude
     private String userName;
-    @Exclude
-    private String equipmentQrId;
 
-    public Borrowing() {
+    public BorrowingRequest() {
         // Required empty constructor for Firebase
     }
 
-    public Borrowing(
+    public BorrowingRequest(
             String equipmentId,
             String userId,
-            Timestamp createdAt,
-            Timestamp borrowedAt,
-            Timestamp returnedAt,
+            Timestamp requestedAt,
             String status
     ) {
-
         this.equipmentId = equipmentId;
         this.userId = userId;
-        this.createdAt = createdAt;
-        this.borrowedAt = borrowedAt;
-        this.returnedAt = returnedAt;
+        this.requestedAt = requestedAt;
         this.status = status;
     }
 
+    // ID
     @Exclude
     public String getId() {
         return id;
     }
 
+    @Exclude
     public void setId(String id) {
         this.id = id;
     }
+
+    // Equipment ID
 
     public String getEquipmentId() {
         return equipmentId;
@@ -69,6 +64,8 @@ public class Borrowing {
         this.equipmentId = equipmentId;
     }
 
+    // User ID
+
     public String getUserId() {
         return userId;
     }
@@ -77,29 +74,17 @@ public class Borrowing {
         this.userId = userId;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    // Requested At
+
+    public Timestamp getRequestedAt() {
+        return requestedAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setRequestedAt(Timestamp requestedAt) {
+        this.requestedAt = requestedAt;
     }
 
-    public Timestamp getBorrowedAt() {
-        return borrowedAt;
-    }
-
-    public void setBorrowedAt(Timestamp borrowedAt) {
-        this.borrowedAt = borrowedAt;
-    }
-
-    public Timestamp getReturnedAt() {
-        return returnedAt;
-    }
-
-    public void setReturnedAt(Timestamp returnedAt) {
-        this.returnedAt = returnedAt;
-    }
+    // Status
 
     public String getStatus() {
         return status;
@@ -128,12 +113,12 @@ public class Borrowing {
     }
 
     @Exclude
-    public String getLab() {
-        return lab;
+    public String getEquipmentQrId() {
+        return equipmentQrId;
     }
 
-    public void setLab(String lab) {
-        this.lab = lab;
+    public void setEquipmentQrId(String equipmentQrId) {
+        this.equipmentQrId = equipmentQrId;
     }
 
     @Exclude
@@ -143,14 +128,5 @@ public class Borrowing {
 
     public void setUserName(String userName) {
         this.userName = userName;
-    }
-
-    @Exclude
-    public String getEquipmentQrId() {
-        return equipmentQrId;
-    }
-
-    public void setEquipmentQrId(String equipmentQrId) {
-        this.equipmentQrId = equipmentQrId;
     }
 }

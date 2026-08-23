@@ -1,5 +1,7 @@
 package com.example.labmate.states;
 
+import com.example.labmate.utils.Constants;
+
 public class HomeState {
 
     public enum Status {
@@ -104,7 +106,11 @@ public class HomeState {
     }
 
     public boolean isAdmin() {
-        return admin;
+        return Constants.ROLE_ADMIN.equalsIgnoreCase(role);
+    }
+
+    public boolean isStaff() {
+        return Constants.ROLE_STAFF.equalsIgnoreCase(role);
     }
 
     public String getMessage() {

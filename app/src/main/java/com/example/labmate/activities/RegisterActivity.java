@@ -65,7 +65,6 @@ public class RegisterActivity extends AppCompatActivity {
                         .get(RegisterViewModel.class);
 
         initializeViews();
-        setupRoleDropdown();
         setupListeners();
         observeViewModel();
     }
@@ -89,31 +88,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         registerDOB =
                 findViewById(R.id.registerDOB);
-
-        roleDropdown =
-                findViewById(R.id.actRole);
-    }
-
-    private void setupRoleDropdown() {
-
-        String[] roles =
-                getResources()
-                        .getStringArray(R.array.user_roles);
-
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        com.google.android.material.R.layout
-                                .mtrl_auto_complete_simple_item,
-                        roles
-                );
-
-        roleDropdown.setAdapter(adapter);
-
-        roleDropdown.setOnItemClickListener(
-                (parent, view, position, id) ->
-                        roleDropdown.clearFocus()
-        );
     }
 
     private void setupListeners() {
@@ -166,10 +140,6 @@ public class RegisterActivity extends AppCompatActivity {
                         .toString()
                         .trim();
 
-        String role =
-                roleDropdown.getText()
-                        .toString()
-                        .trim();
 
         RegisterRequest request =
                 new RegisterRequest(
@@ -177,8 +147,7 @@ public class RegisterActivity extends AppCompatActivity {
                         email,
                         password,
                         mobile,
-                        dob,
-                        role
+                        dob
                 );
 
         registerViewModel.register(
@@ -239,7 +208,8 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(
                     this,
                     "Registration successful!\n" +
-                            "Please verify your email before logging in.",
+                            "Please verify your email before logging in." +
+                            "Check your Spam/Junk folder if you don't see it.",
                     Toast.LENGTH_LONG
             ).show();
 
@@ -308,6 +278,5 @@ public class RegisterActivity extends AppCompatActivity {
         registerEmail.setText("");
         registerMobile.setText("");
         registerDOB.setText("");
-        roleDropdown.setText(null);
     }
 }

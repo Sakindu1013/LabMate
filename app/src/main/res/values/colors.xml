@@ -20,6 +20,7 @@
     <color name="maintenance">#FFF59E0B</color>
     <color name="borrowed">#FF2563EB</color>
     <color name="removed">#FFEF4444</color>
+    <color name="reserved">#FF898989</color>
 
     !-- Energy Color -->
     <color name="accent">#FF10B981</color>

@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.labmate.R;
+import com.example.labmate.utils.Constants;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -255,6 +256,32 @@ public class EditEquipmentActivity extends AppCompatActivity {
                     String documentId =
                             document.getId();
 
+                    String currentState =
+                            document.getString("state");
+
+                    if (Constants.STATE_BORROWED.equalsIgnoreCase(currentState)) {
+
+                        Toast.makeText(
+                                this,
+                                "Borrowed equipment cannot be edited. Return the equipment first.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    // Borrowed is not a valid manually selected state.
+                    if ("Borrowed".equalsIgnoreCase(state)) {
+
+                        Toast.makeText(
+                                this,
+                                "Equipment cannot be manually set to Borrowed. Use the borrowing flow.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
                     db.collection("equipment")
                             .document(documentId)
                             .update(
@@ -359,11 +386,11 @@ public class EditEquipmentActivity extends AppCompatActivity {
                             document.getString("state");
 
                     // Don't remove borrowed equipment.
-                    if ("Borrowed".equals(state)) {
+                    if (Constants.STATE_BORROWED.equalsIgnoreCase(state)) {
 
                         Toast.makeText(
                                 this,
-                                "Borrowed equipment cannot be removed.",
+                                "Borrowed equipment cannot be removed. Return the equipment first.",
                                 Toast.LENGTH_LONG
                         ).show();
 
@@ -371,7 +398,7 @@ public class EditEquipmentActivity extends AppCompatActivity {
                     }
 
                     // Already removed
-                    if ("Removed".equals(state)) {
+                    if (Constants.STATE_REMOVED.equalsIgnoreCase(state)) {
 
                         Toast.makeText(
                                 this,

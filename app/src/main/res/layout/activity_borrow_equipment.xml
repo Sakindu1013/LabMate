@@ -1,109 +1,214 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:id="@+id/main"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/background_color">
+
+<!-- Header -->
+
+<TextView
+    android:id="@+id/tvBorrowTitle"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="20dp"
+    android:text="@string/borrow_equipment"
+    android:textColor="@color/text_primary"
+    android:textSize="28sp"
+    android:textStyle="bold"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+<TextView
+    android:id="@+id/tvBorrowDescription"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginEnd="20dp"
+    android:text="@string/enter_equipment_id_to_borrow_lab_equipments"
+    android:textColor="@color/text_secondary"
+    android:textSize="14sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/tvBorrowTitle" />
+
+<!-- Equipment QR -->
+
+<com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/equipmentQrLayout"
+    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="16dp"
+    android:layout_marginEnd="20dp"
+    android:hint="@string/equipment_qr_id"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/tvBorrowDescription">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/equipmentQR"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textCapWords"
+        android:textColor="@color/text_primary" />
+
+</com.google.android.material.textfield.TextInputLayout>
+
+<!-- Scan QR -->
+
+<com.google.android.material.button.MaterialButton
+    android:id="@+id/btn_scan_qr"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginEnd="20dp"
+    android:text="@string/scan_qr"
+    android:textColor="@color/button_text"
+    android:textSize="16sp"
+    app:backgroundTint="@color/button_primary"
+    app:cornerRadius="14dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/equipmentQrLayout" />
+
+<!-- Clear / Borrow -->
+
+    <LinearLayout
+        android:id="@+id/borrowActionLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_scan_qr">
+
+        <!-- Clear Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_form"
+            android:textSize="15sp"
+            android:textColor="@color/danger"
+            app:backgroundTint="@color/button_secondary"
+            app:strokeColor="@color/danger"
+            app:cornerRadius="14dp"
+            app:strokeWidth="1dp"
+            android:layout_weight="1"
+            android:layout_marginRight="10dp"/>
+
+        <!-- Borrow Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_borrow_equipment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/borrow_equipment"
+            android:textSize="16sp"
+            android:textColor="@color/button_text"
+            app:backgroundTint="@color/button_primary"
+            app:cornerRadius="14dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+<!-- Borrowing History -->
+
+<com.google.android.material.button.MaterialButton
+    android:id="@+id/btn_borrow_history"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginEnd="20dp"
+    android:text="@string/borrowing_history"
+    android:textColor="@color/button_text"
+    android:textSize="16sp"
+    app:backgroundTint="@color/button_primary"
+    app:cornerRadius="14dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/borrowActionLayout" />
+
+<!-- Reserved Equipment Scroll Area -->
+
 <ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background_color"
+    android:id="@+id/reservedEquipmentScroll"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="16dp"
     android:fillViewport="true"
-    android:id="@+id/main">
+    android:clipToPadding="false"
+    android:paddingBottom="20dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/btn_borrow_history">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
 
-        <!-- Header Section -->
+        <!-- Title -->
+
         <TextView
+            android:id="@+id/tvCurrentBorrowingsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/borrow_equipment"
-            android:textSize="28sp"
-            android:textStyle="bold"
+            android:text="Reserved Equipment"
             android:textColor="@color/text_primary"
-            android:layout_marginTop="10dp"/>
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Description -->
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvCurrentBorrowingsDescription"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/enter_equipment_id_to_borrow_lab_equipments"
-            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:text="Equipment approved for borrowing and waiting for checkout."
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="20dp"/>
+            android:textSize="14sp" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <!-- Empty State -->
+
+        <TextView
+            android:id="@+id/tvNoBorrowings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/equipment_qr_id"
-            android:layout_marginBottom="12dp">
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="No equipment is waiting for checkout."
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/equipmentQR"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapWords"
-                android:textColor="@color/text_primary"/>
+        <!-- Reserved / Checkout Cards -->
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBorrowings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Scan Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_scan_qr"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/scan_qr"
-                android:textSize="16sp"
-                android:textColor="@color/button_text"
-                app:backgroundTint="@color/button_primary"
-                app:cornerRadius="14dp"
-                android:layout_marginBottom="10dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-
-
-
-                <!-- Clear Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_clear"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/clear_form"
-                    android:textSize="15sp"
-                    android:textColor="@color/danger"
-                    app:backgroundTint="@color/button_secondary"
-                    app:strokeColor="@color/danger"
-                    app:cornerRadius="14dp"
-                    app:strokeWidth="1dp"
-                    android:layout_weight="1"
-                    android:layout_marginRight="10dp"/>
-
-                <!-- Borrow Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_borrow_equipment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/borrow_equipment"
-                    android:textSize="16sp"
-                    android:textColor="@color/button_text"
-                    app:backgroundTint="@color/button_primary"
-                    app:cornerRadius="14dp"
-                    android:layout_weight="1"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
+            android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
 
 </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

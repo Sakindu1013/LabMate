@@ -65,7 +65,21 @@ public class UserSession {
         String role = getRole();
 
         return Constants.ROLE_ADMIN.equalsIgnoreCase(role)
-                || Constants.ROLE_ACADEMIC.equalsIgnoreCase(role)
-                || Constants.ROLE_NON_ACADEMIC.equalsIgnoreCase(role);
+                || Constants.ROLE_STAFF.equalsIgnoreCase(role);
+    }
+
+    public boolean canBorrowEquipmentDirectly() {
+
+        String role = getRole();
+
+        return Constants.ROLE_ADMIN.equalsIgnoreCase(role)
+                || Constants.ROLE_STAFF.equalsIgnoreCase(role);
+    }
+
+    public boolean canRequestEquipment() {
+
+        String role = getRole();
+
+        return Constants.ROLE_STUDENT.equalsIgnoreCase(role);
     }
 }

@@ -8,13 +8,13 @@ import com.example.labmate.models.RegisterRequest;
 import com.example.labmate.repositories.AuthRepository;
 import com.example.labmate.repositories.UserRepository;
 import com.example.labmate.states.RegisterState;
+import com.example.labmate.utils.Constants;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class RegisterViewModel extends ViewModel {
 
@@ -103,8 +103,7 @@ public class RegisterViewModel extends ViewModel {
                 || isEmpty(request.getPassword())
                 || isEmpty(confirmPassword)
                 || isEmpty(request.getMobile())
-                || isEmpty(request.getDob())
-                || isEmpty(request.getRole())) {
+                || isEmpty(request.getDob())) {
 
             return "Fill all details";
         }
@@ -201,9 +200,10 @@ public class RegisterViewModel extends ViewModel {
                 System.currentTimeMillis()
         );
 
+        // Every newly registered user is a Student.
         userData.put(
                 "role",
-                request.getRole()
+                Constants.ROLE_STUDENT
         );
 
         userRepository.createUser(

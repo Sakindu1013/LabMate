@@ -1,5 +1,6 @@
 package com.example.labmate.repositories;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Map;
@@ -51,6 +52,19 @@ public class UserRepository {
                 );
     }
 
+    public void getById(
+            String userId,
+            OnDocumentSuccess onSuccess,
+            OnFailure onFailure
+    ) {
+
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
+    }
+
     public interface OnSuccess {
         void onSuccess();
     }
@@ -61,5 +75,9 @@ public class UserRepository {
 
     public interface OnUserSuccess {
         void onSuccess(Map<String, Object> userData);
+    }
+
+    public interface OnDocumentSuccess {
+        void onSuccess(DocumentSnapshot document);
     }
 }

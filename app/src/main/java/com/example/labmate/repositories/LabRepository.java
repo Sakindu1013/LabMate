@@ -237,6 +237,10 @@ public class LabRepository {
                                     case "Removed":
                                         summary.increaseRemoved();
                                         break;
+
+                                    case "Reserved":
+                                        summary.increaseReserved();
+                                        break;
                                 }
                             }
 

@@ -171,6 +171,10 @@ public class EquipmentFragment extends Fragment {
                             case "Removed":
                                 summary.increaseRemoved();
                                 break;
+
+                            case "Reserved":
+                                summary.increaseReserved();
+                                break;
                         }
                     }
 

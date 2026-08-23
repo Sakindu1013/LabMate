@@ -1,8 +1,6 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -15,36 +13,31 @@ import com.example.labmate.R;
 import com.example.labmate.repositories.BorrowingRepository;
 import com.example.labmate.repositories.EquipmentRepository;
 import com.example.labmate.utils.Constants;
+import com.example.labmate.utils.UserSession;
 import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ReturnEquipmentActivity extends AppCompatActivity {
 
-    private AutoCompleteTextView actEquipmentQR;
+    private android.widget.EditText equipmentQR;
 
     private Button returnEquipment;
     private Button btnClear;
 
     private BorrowingRepository borrowingRepository;
     private EquipmentRepository equipmentRepository;
-
-    private ArrayList<String> qrIds;
-    private ArrayAdapter<String> adapter;
-
-    private FirebaseAuth auth;
+    private UserSession userSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_return_equipment);
+        setContentView(
+                R.layout.activity_return_equipment
+        );
 
         ViewCompat.setOnApplyWindowInsetsListener(
                 findViewById(R.id.main),
@@ -66,11 +59,14 @@ public class ReturnEquipmentActivity extends AppCompatActivity {
                 }
         );
 
-        borrowingRepository = new BorrowingRepository();
-        equipmentRepository = new EquipmentRepository();
-        auth = FirebaseAuth.getInstance();
+        borrowingRepository =
+                new BorrowingRepository();
 
-        actEquipmentQR = findViewById(R.id.actEquipmentQR);
+        equipmentRepository =
+                new EquipmentRepository();
+
+        equipmentQR =
+                findViewById(R.id.actEquipmentQR);
 
         returnEquipment =
                 findViewById(R.id.btn_return_equipment);
@@ -78,33 +74,39 @@ public class ReturnEquipmentActivity extends AppCompatActivity {
         btnClear =
                 findViewById(R.id.btn_clear);
 
-        qrIds = new ArrayList<>();
+        userSession =
+                new UserSession(this);
 
-        adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                qrIds
-        );
+        if (!userSession.canManageInventory()) {
 
-        actEquipmentQR.setAdapter(adapter);
+            Toast.makeText(
+                    this,
+                    "You do not have permission to return equipment.",
+                    Toast.LENGTH_LONG
+            ).show();
 
-        loadBorrowedEquipment();
+            finish();
+
+            return;
+        }
+
+        // ========================================================
+        // RETURN EQUIPMENT
+        // ========================================================
 
         returnEquipment.setOnClickListener(v -> {
 
             String qrId =
-                    actEquipmentQR
+                    equipmentQR
                             .getText()
                             .toString()
                             .trim();
 
             if (qrId.isEmpty()) {
 
-                Toast.makeText(
-                        this,
-                        "Please select equipment.",
-                        Toast.LENGTH_SHORT
-                ).show();
+                equipmentQR.setError(
+                        "Enter Equipment ID"
+                );
 
                 return;
             }
@@ -112,112 +114,20 @@ public class ReturnEquipmentActivity extends AppCompatActivity {
             returnEquipment(qrId);
         });
 
+        // ========================================================
+        // CLEAR
+        // ========================================================
+
         btnClear.setOnClickListener(v ->
-                actEquipmentQR.setText("")
+                equipmentQR.setText("")
         );
     }
 
-    /**
-     * Loads equipment currently borrowed by the logged-in user.
-     */
-    private void loadBorrowedEquipment() {
+    // ============================================================
+    // RETURN EQUIPMENT
+    // ============================================================
 
-        FirebaseUser user = auth.getCurrentUser();
-
-        if (user == null) {
-
-            Toast.makeText(
-                    this,
-                    "User not found.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        String userId = user.getUid();
-
-        borrowingRepository.getActiveBorrowingsByUserId(
-                userId,
-
-                snapshot -> {
-
-                    qrIds.clear();
-
-                    for (DocumentSnapshot borrowingDoc :
-                            snapshot.getDocuments()) {
-
-                        String equipmentId =
-                                borrowingDoc.getString("equipmentId");
-
-                        if (equipmentId == null) {
-                            continue;
-                        }
-
-                        loadEquipmentQR(equipmentId);
-                    }
-
-                    adapter.notifyDataSetChanged();
-                },
-
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
-        );
-    }
-
-    /**
-     * Gets the QR ID of an equipment document.
-     */
-    private void loadEquipmentQR(String equipmentId) {
-
-        equipmentRepository.getById(
-                equipmentId,
-
-                equipment -> {
-
-                    if (equipment == null) {
-                        return;
-                    }
-
-                    String qrId = equipment.getQrId();
-
-                    if (qrId != null && !qrId.trim().isEmpty()) {
-
-                        qrIds.add(qrId);
-                        adapter.notifyDataSetChanged();
-                    }
-                },
-
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
-        );
-    }
-
-    /**
-     * Returns the selected equipment.
-     */
     private void returnEquipment(String qrId) {
-
-        FirebaseUser user = auth.getCurrentUser();
-
-        if (user == null) {
-
-            Toast.makeText(
-                    this,
-                    "User not found.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        String userId = user.getUid();
 
         equipmentRepository.findByQrId(
                 qrId,
@@ -255,118 +165,128 @@ public class ReturnEquipmentActivity extends AppCompatActivity {
                         return;
                     }
 
-                    verifyBorrowing(
-                            equipmentId,
-                            userId
+                    findBorrowing(
+                            equipmentId
                     );
                 },
 
                 e -> Toast.makeText(
                         this,
-                        e.getMessage(),
+                        e.getMessage() != null
+                                ? e.getMessage()
+                                : "Failed to find equipment.",
                         Toast.LENGTH_LONG
                 ).show()
         );
     }
 
-    /**
-     * Makes sure the selected equipment was actually
-     * borrowed by the currently logged-in user.
-     */
-    private void verifyBorrowing(
-            String equipmentId,
-            String userId
+    // ============================================================
+    // FIND CURRENT BORROWING
+    // ============================================================
+
+    private void findBorrowing(
+            String equipmentId
     ) {
 
-        borrowingRepository.getActiveBorrowingByEquipmentId(
+        borrowingRepository.getBorrowedBorrowingByEquipmentId(
                 equipmentId,
 
                 snapshot -> {
 
-                    DocumentSnapshot borrowingDoc = null;
-
-                    for (DocumentSnapshot doc :
-                            snapshot.getDocuments()) {
-
-                        String borrowingUserId =
-                                doc.getString("userId");
-
-                        if (userId.equals(borrowingUserId)) {
-
-                            borrowingDoc = doc;
-                            break;
-                        }
-                    }
-
-                    if (borrowingDoc == null) {
+                    if (snapshot.isEmpty()) {
 
                         Toast.makeText(
                                 this,
-                                "You did not borrow this equipment.",
+                                "No active borrowing found for this equipment.",
                                 Toast.LENGTH_LONG
                         ).show();
 
                         return;
                     }
 
+                    DocumentSnapshot borrowingDoc =
+                            snapshot.getDocuments().get(0);
+
+                    String borrowingId =
+                            borrowingDoc.getId();
+
                     completeReturn(
                             equipmentId,
-                            borrowingDoc.getId()
+                            borrowingId
                     );
                 },
 
                 e -> Toast.makeText(
                         this,
-                        e.getMessage(),
+                        e.getMessage() != null
+                                ? e.getMessage()
+                                : "Failed to find borrowing.",
                         Toast.LENGTH_LONG
                 ).show()
         );
     }
 
-    /**
-     * Completes both parts of the return:
-     *
-     * 1. Equipment → In Lab
-     * 2. Borrowing → Returned
-     */
+    // ============================================================
+    // COMPLETE RETURN
+    // ============================================================
+
     private void completeReturn(
             String equipmentId,
-            String borrowingDocumentId
+            String borrowingId
     ) {
 
-        equipmentRepository.updateState(
-                equipmentId,
-                Constants.STATE_IN_LAB,
+        WriteBatch batch =
+                FirebaseFirestore
+                        .getInstance()
+                        .batch();
 
-                () -> {
+        DocumentReference borrowingRef =
+                FirebaseFirestore
+                        .getInstance()
+                        .collection("borrowings")
+                        .document(borrowingId);
 
-                    borrowingRepository.markAsReturned(
-                            borrowingDocumentId,
+        DocumentReference equipmentRef =
+                FirebaseFirestore
+                        .getInstance()
+                        .collection("equipment")
+                        .document(equipmentId);
 
-                            () -> {
+        batch.update(
+                borrowingRef,
+                "status",
+                Constants.BORROWING_RETURNED,
 
-                                Toast.makeText(
-                                        this,
-                                        "Equipment Successfully Returned",
-                                        Toast.LENGTH_LONG
-                                ).show();
-
-                                finish();
-                            },
-
-                            e -> Toast.makeText(
-                                    this,
-                                    e.getMessage(),
-                                    Toast.LENGTH_LONG
-                            ).show()
-                    );
-                },
-
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
+                "returnedAt",
+                Timestamp.now()
         );
+
+        batch.update(
+                equipmentRef,
+                "state",
+                Constants.STATE_IN_LAB
+        );
+
+        batch.commit()
+                .addOnSuccessListener(unused -> {
+
+                    Toast.makeText(
+                            this,
+                            "Equipment Successfully Returned",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    equipmentQR.setText("");
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(
+                            this,
+                            e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "Failed to return equipment.",
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
     }
 }

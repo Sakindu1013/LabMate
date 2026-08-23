@@ -27,6 +27,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
     private TextView viewBorrowed;
     private TextView viewMaintenance;
     private TextView viewRemoved;
+    private TextView viewReserved;
 
     private RecyclerView recyclerView;
 
@@ -86,6 +87,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
         viewBorrowed = findViewById(R.id.equipmentBorrowed);
         viewMaintenance = findViewById(R.id.equipmentMaintenance);
         viewRemoved = findViewById(R.id.equipmentRemoved);
+        viewReserved = findViewById(R.id.equipmentReserved);
 
         viewType.setText(
                 equipmentType != null
@@ -183,6 +185,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
         int borrowed = 0;
         int maintenance = 0;
         int removed = 0;
+        int reserved = 0;
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
 
@@ -220,6 +223,10 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
                 case "Removed":
                     removed++;
                     break;
+
+                case "Reserved":
+                    reserved++;
+                    break;
             }
         }
 
@@ -244,7 +251,8 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
                 inLab,
                 borrowed,
                 maintenance,
-                removed
+                removed,
+                reserved
         );
 
         adapter.notifyDataSetChanged();
@@ -255,7 +263,8 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
             int inLab,
             int borrowed,
             int maintenance,
-            int removed) {
+            int removed,
+            int reserved) {
 
         viewTotal.setText(
                 total + " Equipment"
@@ -275,6 +284,10 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
 
         viewRemoved.setText(
                 String.valueOf(removed)
+        );
+
+        viewReserved.setText(
+                String.valueOf(reserved)
         );
     }
 

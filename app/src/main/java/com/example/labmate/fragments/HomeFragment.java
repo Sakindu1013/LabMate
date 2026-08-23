@@ -16,10 +16,12 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.labmate.R;
 import com.example.labmate.activities.BorrowEquipmentActivity;
 import com.example.labmate.activities.ManageInventoryActivity;
+import com.example.labmate.activities.ManageRequestsActivity;
 import com.example.labmate.activities.ManageUserActivity;
 import com.example.labmate.activities.ReturnEquipmentActivity;
 import com.example.labmate.states.HomeState;
 import com.example.labmate.viewmodels.HomeViewModel;
+
 
 public class HomeFragment extends Fragment {
 
@@ -30,7 +32,7 @@ public class HomeFragment extends Fragment {
     private Button buttonReturn;
     private Button buttonManageInventory;
     private Button buttonManageUsers;
-
+    private Button buttonManageRequests;
     private HomeViewModel homeViewModel;
 
     public HomeFragment() {
@@ -96,6 +98,11 @@ public class HomeFragment extends Fragment {
         buttonManageUsers =
                 view.findViewById(
                         R.id.manage_users
+                );
+
+        buttonManageRequests =
+                view.findViewById(
+                        R.id.manage_requests
                 );
 
         buttonManageInventory.setVisibility(
@@ -165,6 +172,17 @@ public class HomeFragment extends Fragment {
 
             startActivity(intent);
         });
+
+        buttonManageRequests.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            requireContext(),
+                            ManageRequestsActivity.class
+                    );
+
+            startActivity(intent);
+        });
     }
 
     private void handleHomeState(
@@ -207,16 +225,39 @@ public class HomeFragment extends Fragment {
                 state.getRole()
         );
 
-        if (state.canManageInventory()) {
+        buttonManageInventory.setVisibility(
+                View.GONE
+        );
+
+        buttonManageUsers.setVisibility(
+                View.GONE
+        );
+
+        buttonReturn.setVisibility(
+                View.GONE
+        );
+
+        if (state.isAdmin()) {
 
             buttonManageInventory.setVisibility(
                     View.VISIBLE
             );
-        }
-
-        if (state.isAdmin()) {
 
             buttonManageUsers.setVisibility(
+                    View.VISIBLE
+            );
+
+            buttonReturn.setVisibility(
+                    View.VISIBLE
+            );
+
+        } else if (state.isStaff()) {
+
+            buttonManageInventory.setVisibility(
+                    View.VISIBLE
+            );
+
+            buttonReturn.setVisibility(
                     View.VISIBLE
             );
         }
@@ -235,5 +276,14 @@ public class HomeFragment extends Fragment {
                         : "Failed to load data.",
                 Toast.LENGTH_LONG
         ).show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (homeViewModel != null) {
+            homeViewModel.loadUserData();
+        }
     }
 }

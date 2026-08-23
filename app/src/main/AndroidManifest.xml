@@ -15,6 +15,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LabMate">
         <activity
+            android:name=".activities.BorrowingHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ManageRequestsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.BorrowingRequestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RequestEquipmentActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.RemoveEquipmentActivity"
             android:exported="false" />
         <activity

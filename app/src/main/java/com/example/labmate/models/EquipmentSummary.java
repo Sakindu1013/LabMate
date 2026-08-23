@@ -7,6 +7,7 @@ public class EquipmentSummary {
     private int borrowed;
     private int maintenance;
     private int removed;
+    private int reserved;
 
     public EquipmentSummary(String type){
         this.type = type;
@@ -30,6 +31,9 @@ public class EquipmentSummary {
     public int getRemoved() {
         return removed;
     }
+    public int getReserved() {
+        return reserved;
+    }
 
     public int getTotal() {
         return total;
@@ -48,5 +52,8 @@ public class EquipmentSummary {
     }
     public void increaseRemoved(){
         removed++;
+    }
+    public void increaseReserved(){
+        reserved++;
     }
 }

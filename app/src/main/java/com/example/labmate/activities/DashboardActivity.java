@@ -1,7 +1,9 @@
 package com.example.labmate.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -14,9 +16,14 @@ import com.example.labmate.fragments.LabsFragment;
 import com.example.labmate.fragments.ProfileFragment;
 import com.example.labmate.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
+import com.example.labmate.utils.UserSession;
 
 public class DashboardActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigation;
+
+    private UserSession userSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +37,8 @@ public class DashboardActivity extends AppCompatActivity {
                     return insets;
                 }
         );
+
+        userSession = new UserSession(this);
 
         bottomNavigation = findViewById(R.id.bottomNavigation);
         bottomNavigation.setOnItemSelectedListener(item -> {
@@ -62,6 +71,69 @@ public class DashboardActivity extends AppCompatActivity {
         if(savedInstanceState == null){
             bottomNavigation.setSelectedItemId(R.id.nav_home);
         }
+
+        getOnBackPressedDispatcher().addCallback(
+                this,
+                new OnBackPressedCallback(true) {
+
+                    @Override
+                    public void handleOnBackPressed() {
+
+                        Fragment currentFragment =
+                                getSupportFragmentManager()
+                                        .findFragmentById(
+                                                R.id.fragmentContainer
+                                        );
+
+                        if (currentFragment instanceof HomeFragment) {
+
+                            new MaterialAlertDialogBuilder(
+                                    DashboardActivity.this
+                            )
+                                    .setTitle("Logout")
+                                    .setMessage(
+                                            "Are you sure you want to logout?"
+                                    )
+                                    .setNegativeButton(
+                                            "Cancel",
+                                            null
+                                    )
+                                    .setPositiveButton(
+                                            "Logout",
+                                            (dialog, which) -> {
+
+                                                userSession.clear();
+
+                                                FirebaseAuth
+                                                        .getInstance()
+                                                        .signOut();
+
+                                                Intent intent =
+                                                        new Intent(
+                                                                DashboardActivity.this,
+                                                                LoginActivity.class
+                                                        );
+
+                                                intent.setFlags(
+                                                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                                                | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                );
+
+                                                startActivity(intent);
+                                                finish();
+                                            }
+                                    )
+                                    .show();
+
+                        } else {
+
+                            bottomNavigation.setSelectedItemId(
+                                    R.id.nav_home
+                            );
+                        }
+                    }
+                }
+        );
     }
 
     private void loadFragment(Fragment fragment){

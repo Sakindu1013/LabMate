@@ -80,6 +80,10 @@ public class EquipmentSummaryAdapter
                 "Removed: " + equipment.getRemoved()
         );
 
+        holder.reserved.setText(
+                "Reserved: " + equipment.getReserved()
+        );
+
         holder.itemView.setOnClickListener(v -> {
 
             Intent intent = new Intent(
@@ -115,6 +119,7 @@ public class EquipmentSummaryAdapter
         TextView borrowed;
         TextView maintenance;
         TextView removed;
+        TextView reserved;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -141,6 +146,10 @@ public class EquipmentSummaryAdapter
 
             removed = itemView.findViewById(
                     R.id.equipmentRemoved
+            );
+
+            reserved = itemView.findViewById(
+                    R.id.equipmentReserved
             );
         }
     }

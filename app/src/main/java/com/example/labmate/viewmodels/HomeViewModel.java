@@ -13,8 +13,6 @@ import com.example.labmate.states.HomeState;
 import com.example.labmate.utils.UserSession;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Map;
-
 public class HomeViewModel extends AndroidViewModel {
 
     private final AuthRepository authRepository;
@@ -22,15 +20,20 @@ public class HomeViewModel extends AndroidViewModel {
     private final UserSession userSession;
 
     private final MutableLiveData<HomeState> homeState =
-            new MutableLiveData<>(HomeState.idle());
+            new MutableLiveData<>(
+                    HomeState.idle()
+            );
 
     public HomeViewModel(
             @NonNull Application application
     ) {
         super(application);
 
-        authRepository = new AuthRepository();
-        userRepository = new UserRepository();
+        authRepository =
+                new AuthRepository();
+
+        userRepository =
+                new UserRepository();
 
         userSession =
                 new UserSession(application);
@@ -90,7 +93,6 @@ public class HomeViewModel extends AndroidViewModel {
                         role = "No Role";
                     }
 
-                    // Save user information locally.
                     userSession.saveUser(
                             user.getUid(),
                             name,
@@ -101,8 +103,8 @@ public class HomeViewModel extends AndroidViewModel {
                             HomeState.success(
                                     name,
                                     role,
-                                    userSession.isAdmin(),
-                                    userSession.canManageInventory()
+                                    userSession.canManageInventory(),
+                                    userSession.isAdmin()
                             )
                     );
                 },

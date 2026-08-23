@@ -16,7 +16,6 @@
 
     <string-array name="equipment_states">
         <item>In Lab</item>
-        <item>Borrowed</item>
         <item>Under Maintenance</item>
         <item>Removed</item>
     </string-array>

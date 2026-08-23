@@ -59,4 +59,9 @@
     <string name="enter_equipment_id_to_remove_the_lab_equipment">Enter Equipment ID to Remove the LAB Equipment</string>
     <string name="search_equipment">Search Equipment</string>
     <string name="select_equipment">Select Equipment</string>
+    <string name="search_user">Search User</string>
+    <string name="borrowing_requests">Borrowing Requests</string>
+    <string name="borrowing_history">Borrowing History</string>
+    <string name="no_borrowing_history_found">No borrowing history found.</string>
+    <string name="reserved">Reserved</string>
 </resources>

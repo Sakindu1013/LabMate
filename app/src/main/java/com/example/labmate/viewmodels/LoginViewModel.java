@@ -74,7 +74,7 @@ public class LoginViewModel extends ViewModel {
                 },
 
                 e -> loginState.setValue(
-                        LoginState.error(getErrorMessage(e))
+                        LoginState.error("Incorrect email or password.")
                 )
         );
     }

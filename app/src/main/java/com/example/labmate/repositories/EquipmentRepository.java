@@ -122,20 +122,14 @@ public class EquipmentRepository {
 
     public void getById(
             String documentId,
-            OnSuccess<Equipment> onSuccess,
+            OnSuccess<DocumentSnapshot> onSuccess,
             OnFailure onFailure
     ) {
 
         db.collection("equipment")
                 .document(documentId)
                 .get()
-                .addOnSuccessListener(document -> {
-
-                    Equipment equipment =
-                            document.toObject(Equipment.class);
-
-                    onSuccess.onSuccess(equipment);
-                })
+                .addOnSuccessListener(onSuccess::onSuccess)
                 .addOnFailureListener(onFailure::onFailure);
     }
 
