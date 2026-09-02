@@ -1,12 +1,12 @@
 package com.example.labmate.activities;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +21,8 @@ import com.example.labmate.states.RegisterState;
 import com.example.labmate.viewmodels.RegisterViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.Calendar;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private RegisterViewModel registerViewModel;
@@ -31,76 +33,48 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText registerEmail;
     private EditText registerMobile;
     private EditText registerDOB;
-
-    private AutoCompleteTextView roleDropdown;
+    private FrameLayout loadingOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_register);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
-
-        registerViewModel =
-                new ViewModelProvider(this)
-                        .get(RegisterViewModel.class);
+        registerViewModel = new ViewModelProvider(this)
+                .get(RegisterViewModel.class);
 
         initializeViews();
         setupListeners();
+        setupDatePicker();
         observeViewModel();
     }
 
     private void initializeViews() {
 
-        registerName =
-                findViewById(R.id.registerName);
-
-        registerPassword =
-                findViewById(R.id.registerPassword);
-
-        confirmPassword =
-                findViewById(R.id.confirmPassword);
-
-        registerEmail =
-                findViewById(R.id.registerEmail);
-
-        registerMobile =
-                findViewById(R.id.registerMobile);
-
-        registerDOB =
-                findViewById(R.id.registerDOB);
+        registerName = findViewById(R.id.registerName);
+        registerPassword = findViewById(R.id.registerPassword);
+        confirmPassword = findViewById(R.id.confirmPassword);
+        registerEmail = findViewById(R.id.registerEmail);
+        registerMobile = findViewById(R.id.registerMobile);
+        registerDOB = findViewById(R.id.registerDOB);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void setupListeners() {
 
-        Button registerButton =
-                findViewById(R.id.btn_register);
+        Button registerButton = findViewById(R.id.btn_register);
 
         registerButton.setOnClickListener(
                 v -> performRegistration()
         );
 
-        Button clearButton =
-                findViewById(R.id.btn_clear);
+        Button clearButton = findViewById(R.id.btn_clear);
 
         clearButton.setOnClickListener(
                 v -> showClearFormDialog()
@@ -109,46 +83,38 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void performRegistration() {
 
-        String name =
-                registerName.getText()
-                        .toString()
-                        .trim()
-                        .replaceAll("\\s+", " ");
+        String name = registerName.getText()
+                .toString()
+                .trim()
+                .replaceAll("\\s+", " ");
 
-        String password =
-                registerPassword.getText()
-                        .toString()
-                        .trim();
+        String password = registerPassword.getText()
+                .toString()
+                .trim();
 
-        String confirmPasswordText =
-                confirmPassword.getText()
-                        .toString()
-                        .trim();
+        String confirmPasswordText = confirmPassword.getText()
+                .toString()
+                .trim();
 
-        String email =
-                registerEmail.getText()
-                        .toString()
-                        .trim();
+        String email = registerEmail.getText()
+                .toString()
+                .trim();
 
-        String mobile =
-                registerMobile.getText()
-                        .toString()
-                        .trim();
+        String mobile = registerMobile.getText()
+                .toString()
+                .trim();
 
-        String dob =
-                registerDOB.getText()
-                        .toString()
-                        .trim();
+        String dob = registerDOB.getText()
+                .toString()
+                .trim();
 
-
-        RegisterRequest request =
-                new RegisterRequest(
-                        name,
-                        email,
-                        password,
-                        mobile,
-                        dob
-                );
+        RegisterRequest request = new RegisterRequest(
+                name,
+                email,
+                password,
+                mobile,
+                dob
+        );
 
         registerViewModel.register(
                 request,
@@ -165,9 +131,7 @@ public class RegisterActivity extends AppCompatActivity {
                 );
     }
 
-    private void handleRegisterState(
-            RegisterState state
-    ) {
+    private void handleRegisterState(RegisterState state) {
 
         if (state == null) {
             return;
@@ -177,10 +141,13 @@ public class RegisterActivity extends AppCompatActivity {
 
             case LOADING:
 
-                // We can add a ProgressBar here later.
+                loadingOverlay.setVisibility(View.VISIBLE);
+
                 break;
 
             case SUCCESS:
+
+                loadingOverlay.setVisibility(View.GONE);
 
                 handleRegistrationSuccess(
                         state.isVerificationEmailSent()
@@ -190,7 +157,10 @@ public class RegisterActivity extends AppCompatActivity {
 
             case ERROR:
 
+                loadingOverlay.setVisibility(View.GONE);
+
                 showError(state.getMessage());
+
                 break;
 
             case IDLE:
@@ -199,16 +169,14 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void handleRegistrationSuccess(
-            boolean verificationEmailSent
-    ) {
+    private void handleRegistrationSuccess(boolean verificationEmailSent) {
 
         if (verificationEmailSent) {
 
             Toast.makeText(
                     this,
                     "Registration successful!\n" +
-                            "Please verify your email before logging in." +
+                            "Please verify your email before logging in.\n" +
                             "Check your Spam/Junk folder if you don't see it.",
                     Toast.LENGTH_LONG
             ).show();
@@ -227,11 +195,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         registerViewModel.logout();
 
-        Intent intent =
-                new Intent(
-                        RegisterActivity.this,
-                        LoginActivity.class
-                );
+        Intent intent = new Intent(
+                RegisterActivity.this,
+                LoginActivity.class
+        );
 
         startActivity(intent);
         finish();
@@ -241,11 +208,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (message != null && !message.isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    message,
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -253,19 +216,15 @@ public class RegisterActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Clear Form")
-                .setMessage(
-                        "Do you want to clear the form?"
-                )
+                .setMessage("Do you want to clear the form?")
                 .setCancelable(false)
                 .setPositiveButton(
                         "Clear",
-                        (dialog, which) ->
-                                clearForm()
+                        (dialog, which) -> clearForm()
                 )
                 .setNegativeButton(
                         "Cancel",
-                        (dialog, which) ->
-                                dialog.dismiss()
+                        (dialog, which) -> dialog.dismiss()
                 )
                 .show();
     }
@@ -278,5 +237,41 @@ public class RegisterActivity extends AppCompatActivity {
         registerEmail.setText("");
         registerMobile.setText("");
         registerDOB.setText("");
+    }
+
+    private void setupDatePicker() {
+
+        registerDOB.setOnClickListener(
+                v -> showDatePicker()
+        );
+    }
+
+    private void showDatePicker() {
+
+        Calendar calendar = Calendar.getInstance();
+
+        DatePickerDialog datePickerDialog =
+                new DatePickerDialog(
+                        this,
+                        (view, year, month, dayOfMonth) -> {
+
+                            String date = String.format(
+                                    "%02d/%02d/%04d",
+                                    dayOfMonth,
+                                    month + 1,
+                                    year
+                            );
+
+                            registerDOB.setText(date);
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                );
+
+        datePickerDialog.getDatePicker()
+                .setMaxDate(System.currentTimeMillis());
+
+        datePickerDialog.show();
     }
 }

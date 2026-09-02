@@ -1,6 +1,8 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,11 +19,11 @@ import com.example.labmate.adapters.EquipmentSummaryAdapter;
 import com.example.labmate.models.EquipmentSummary;
 import com.example.labmate.states.LabDetailsState;
 import com.example.labmate.viewmodels.LabDetailsViewModel;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 
-public class LabDetailsActivity
-        extends AppCompatActivity {
+public class LabDetailsActivity extends AppCompatActivity {
 
     private TextView viewName;
     private TextView viewInCharge;
@@ -32,45 +34,27 @@ public class LabDetailsActivity
 
     private EquipmentSummaryAdapter adapter;
 
-    private ArrayList<EquipmentSummary>
-            equipmentSummaryList;
+    private ArrayList<EquipmentSummary> equipmentSummaryList;
 
     private LabDetailsViewModel viewModel;
 
+    private FrameLayout loadingOverlay;
     private String labName;
     private String labInCharge;
     private String labLocation;
 
+    private boolean initialLoadCompleted = false;
+
     @Override
-    protected void onCreate(
-            Bundle savedInstanceState
-    ) {
-
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lab_details);
 
-        setContentView(
-                R.layout.activity_lab_details
-        );
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         getLabData();
         initializeViews();
@@ -80,97 +64,53 @@ public class LabDetailsActivity
 
     private void getLabData() {
 
-        labName =
-                getIntent().getStringExtra(
-                        "LAB_NAME"
-                );
-
-        labInCharge =
-                getIntent().getStringExtra(
-                        "LAB_IN_CHARGE"
-                );
-
-        labLocation =
-                getIntent().getStringExtra(
-                        "LAB_LOCATION"
-                );
+        labName = getIntent().getStringExtra("LAB_NAME");
+        labInCharge = getIntent().getStringExtra("LAB_IN_CHARGE");
+        labLocation = getIntent().getStringExtra("LAB_LOCATION");
     }
 
     private void initializeViews() {
 
-        viewName =
-                findViewById(R.id.labName);
+        viewName = findViewById(R.id.labName);
+        viewInCharge = findViewById(R.id.personInCharge);
+        viewLocation = findViewById(R.id.actLocation);
+        equipmentTotal = findViewById(R.id.equipmentTotal);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
 
-        viewInCharge =
-                findViewById(
-                        R.id.personInCharge
-                );
-
-        viewLocation =
-                findViewById(
-                        R.id.actLocation
-                );
-
-        equipmentTotal =
-                findViewById(
-                        R.id.equipmentTotal
-                );
-
-        viewName.setText(
-                labName
-        );
-
-        viewInCharge.setText(
-                "In Charge: " + labInCharge
-        );
-
-        viewLocation.setText(
-                "Location: " + labLocation
-        );
+        viewName.setText(labName);
+        viewInCharge.setText("In Charge: " + labInCharge);
+        viewLocation.setText("Location: " + labLocation);
     }
 
     private void setupRecyclerView() {
 
-        recyclerView =
-                findViewById(
-                        R.id.recyclerEquipments
-                );
+        recyclerView = findViewById(R.id.recyclerEquipments);
 
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        equipmentSummaryList = new ArrayList<>();
+
+        adapter = new EquipmentSummaryAdapter(
+                this,
+                equipmentSummaryList,
+                labName
         );
-
-        equipmentSummaryList =
-                new ArrayList<>();
-
-        adapter =
-                new EquipmentSummaryAdapter(
-                        this,
-                        equipmentSummaryList,
-                        labName
-                );
 
         recyclerView.setAdapter(adapter);
     }
 
     private void setupViewModel() {
 
-        viewModel =
-                new ViewModelProvider(this)
-                        .get(
-                                LabDetailsViewModel.class
-                        );
+        viewModel = new ViewModelProvider(this)
+                .get(LabDetailsViewModel.class);
 
-        viewModel.getState()
-                .observe(
-                        this,
-                        this::handleState
-                );
+        viewModel.getState().observe(
+                this,
+                this::handleState
+        );
     }
 
-    private void handleState(
-            LabDetailsState state
-    ) {
+    private void handleState(LabDetailsState state) {
 
         if (state == null) {
             return;
@@ -179,39 +119,35 @@ public class LabDetailsActivity
         switch (state.getStatus()) {
 
             case LOADING:
-                // ProgressBar later.
+                showLoading();
                 break;
 
             case SUCCESS:
+                hideLoading();
+                initialLoadCompleted = true;
 
                 equipmentTotal.setText(
-                        "Total Equipment: "
-                                + state.getTotalEquipment()
+                        "Total Equipment: " + state.getTotalEquipment()
                 );
 
                 equipmentSummaryList.clear();
 
                 if (state.getSummaries() != null) {
-
-                    equipmentSummaryList.addAll(
-                            state.getSummaries()
-                    );
+                    equipmentSummaryList.addAll(state.getSummaries());
                 }
 
                 adapter.notifyDataSetChanged();
-
                 break;
 
             case ERROR:
+                hideLoading();
+                initialLoadCompleted = true;
 
                 Toast.makeText(
                         this,
-                        state.getMessage() != null
-                                ? state.getMessage()
-                                : "Failed to load equipment.",
+                        state.getMessage() != null ? state.getMessage() : "Failed to load equipment.",
                         Toast.LENGTH_LONG
                 ).show();
-
                 break;
 
             case IDLE:
@@ -220,17 +156,26 @@ public class LabDetailsActivity
         }
     }
 
+    private void showLoading() {
+
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideLoading() {
+
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
+    }
+
     @Override
     protected void onResume() {
-
         super.onResume();
 
-        if (viewModel != null
-                && labName != null) {
-
-            viewModel.loadEquipmentSummary(
-                    labName
-            );
+        if (viewModel != null && labName != null) {
+            viewModel.loadEquipmentSummary(labName, false);
         }
     }
 }

@@ -15,8 +15,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 
-public class BorrowingAdapter
-        extends RecyclerView.Adapter<BorrowingAdapter.ViewHolder> {
+public class BorrowingAdapter extends RecyclerView.Adapter<BorrowingAdapter.ViewHolder> {
 
     public interface BorrowingActionListener {
 
@@ -48,13 +47,12 @@ public class BorrowingAdapter
             int viewType
     ) {
 
-        View view =
-                LayoutInflater.from(parent.getContext())
-                        .inflate(
-                                R.layout.item_active_borrowing,
-                                parent,
-                                false
-                        );
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(
+                        R.layout.item_active_borrowing,
+                        parent,
+                        false
+                );
 
         return new ViewHolder(view);
     }
@@ -65,8 +63,7 @@ public class BorrowingAdapter
             int position
     ) {
 
-        Borrowing borrowing =
-                borrowingList.get(position);
+        Borrowing borrowing = borrowingList.get(position);
 
         // Equipment information
         holder.equipmentName.setText(
@@ -113,90 +110,61 @@ public class BorrowingAdapter
         if (borrowing.getCreatedAt() != null) {
 
             holder.createdAt.setText(
-                    "Requested: "
-                            + borrowing.getCreatedAt()
-                            .toDate()
-                            .toString()
+                    "Requested: " + borrowing.getCreatedAt().toDate().toString()
             );
 
         } else {
 
-            holder.createdAt.setText(
-                    "Requested: Unknown"
-            );
+            holder.createdAt.setText("Requested: Unknown");
         }
 
         // Borrowed date
         if (borrowing.getBorrowedAt() != null) {
 
             holder.borrowedAt.setText(
-                    "Borrowed: "
-                            + borrowing.getBorrowedAt()
-                            .toDate()
-                            .toString()
+                    "Borrowed: " + borrowing.getBorrowedAt().toDate().toString()
             );
 
         } else {
 
-            holder.borrowedAt.setText(
-                    "Borrowed: Not checked out"
-            );
+            holder.borrowedAt.setText("Borrowed: Not checked out");
         }
 
         // Returned date
         if (borrowing.getReturnedAt() != null) {
 
             holder.returnedAt.setText(
-                    "Returned: "
-                            + borrowing.getReturnedAt()
-                            .toDate()
-                            .toString()
+                    "Returned: " + borrowing.getReturnedAt().toDate().toString()
             );
 
         } else {
 
-            holder.returnedAt.setText(
-                    "Returned: Not returned"
-            );
+            holder.returnedAt.setText("Returned: Not returned");
         }
 
         // Status
         holder.status.setText(
-                "Status: "
-                        + borrowing.getStatus()
+                "Status: " + borrowing.getStatus()
         );
 
         // Checkout button
-        if (showCheckout
-                && Constants.BORROWING_ACTIVE.equals(
-                borrowing.getStatus()
-        )) {
+        if (showCheckout && Constants.BORROWING_ACTIVE.equals(borrowing.getStatus())) {
 
-            holder.checkoutButton.setVisibility(
-                    View.VISIBLE
-            );
+            holder.checkoutButton.setVisibility(View.VISIBLE);
 
-            holder.checkoutButton.setOnClickListener(
-                    v -> {
+            holder.checkoutButton.setOnClickListener(v -> {
 
-                        if (listener != null) {
+                if (listener != null) {
 
-                            listener.onCheckout(
-                                    borrowing
-                            );
-                        }
-                    }
-            );
+                    listener.onCheckout(borrowing);
+                }
+            });
 
         } else {
 
-            holder.checkoutButton.setVisibility(
-                    View.GONE
-            );
+            holder.checkoutButton.setVisibility(View.GONE);
 
-            holder.checkoutButton.setOnClickListener(
-                    null
-            );
+            holder.checkoutButton.setOnClickListener(null);
         }
     }
 
@@ -206,8 +174,7 @@ public class BorrowingAdapter
         return borrowingList.size();
     }
 
-    public static class ViewHolder
-            extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView equipmentName;
         TextView equipmentModel;
@@ -221,61 +188,49 @@ public class BorrowingAdapter
 
         MaterialButton checkoutButton;
 
-        public ViewHolder(
-                @NonNull View itemView
-        ) {
+        public ViewHolder(@NonNull View itemView) {
 
             super(itemView);
 
-            equipmentName =
-                    itemView.findViewById(
-                            R.id.borrowingEquipmentName
-                    );
+            equipmentName = itemView.findViewById(
+                    R.id.borrowingEquipmentName
+            );
 
-            equipmentModel =
-                    itemView.findViewById(
-                            R.id.borrowingEquipmentModel
-                    );
+            equipmentModel = itemView.findViewById(
+                    R.id.borrowingEquipmentModel
+            );
 
-            equipmentQrId =
-                    itemView.findViewById(
-                            R.id.borrowingEquipmentQrId
-                    );
+            equipmentQrId = itemView.findViewById(
+                    R.id.borrowingEquipmentQrId
+            );
 
-            lab =
-                    itemView.findViewById(
-                            R.id.borrowingLab
-                    );
+            lab = itemView.findViewById(
+                    R.id.borrowingLab
+            );
 
-            userName =
-                    itemView.findViewById(
-                            R.id.borrowingUserName
-                    );
+            userName = itemView.findViewById(
+                    R.id.borrowingUserName
+            );
 
-            createdAt =
-                    itemView.findViewById(
-                            R.id.borrowingCreatedAt
-                    );
+            createdAt = itemView.findViewById(
+                    R.id.borrowingCreatedAt
+            );
 
-            borrowedAt =
-                    itemView.findViewById(
-                            R.id.borrowingBorrowedAt
-                    );
+            borrowedAt = itemView.findViewById(
+                    R.id.borrowingBorrowedAt
+            );
 
-            returnedAt =
-                    itemView.findViewById(
-                            R.id.borrowingReturnedAt
-                    );
+            returnedAt = itemView.findViewById(
+                    R.id.borrowingReturnedAt
+            );
 
-            status =
-                    itemView.findViewById(
-                            R.id.borrowingStatus
-                    );
+            status = itemView.findViewById(
+                    R.id.borrowingStatus
+            );
 
-            checkoutButton =
-                    itemView.findViewById(
-                            R.id.btn_checkout
-                    );
+            checkoutButton = itemView.findViewById(
+                    R.id.btn_checkout
+            );
         }
     }
 }

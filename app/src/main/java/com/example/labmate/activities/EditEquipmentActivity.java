@@ -1,10 +1,12 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,70 +27,35 @@ public class EditEquipmentActivity extends AppCompatActivity {
     private EditText equipmentName;
     private EditText equipmentModel;
     private EditText equipmentQR;
-
+    private FrameLayout loadingOverlay;
     private AutoCompleteTextView actLab;
     private AutoCompleteTextView stateDropdown;
-
     private Button editEquipment;
     private Button deleteEquipment;
-
     private ArrayList<String> labNames;
     private ArrayAdapter<String> labAdapter;
-
     private FirebaseFirestore db;
-
     private String qrId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_edit_equipment);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         db = FirebaseFirestore.getInstance();
 
         // Get existing equipment data
         qrId = getIntent().getStringExtra("QR_ID");
-
-        String model =
-                getIntent().getStringExtra(
-                        "EQUIPMENT_MODEL"
-                );
-
-        String name =
-                getIntent().getStringExtra(
-                        "EQUIPMENT_NAME"
-                );
-
-        String laboratory =
-                getIntent().getStringExtra(
-                        "LABORATORY"
-                );
-
-        String state =
-                getIntent().getStringExtra(
-                        "STATE"
-                );
+        String model = getIntent().getStringExtra("EQUIPMENT_MODEL");
+        String name = getIntent().getStringExtra("EQUIPMENT_NAME");
+        String laboratory = getIntent().getStringExtra("LABORATORY");
+        String state = getIntent().getStringExtra("STATE");
 
         initializeViews();
 
@@ -109,24 +76,13 @@ public class EditEquipmentActivity extends AppCompatActivity {
     private void initializeViews() {
 
         equipmentQR = findViewById(R.id.qrId);
-
-        equipmentName =
-                findViewById(R.id.equipmentName);
-
-        equipmentModel =
-                findViewById(R.id.equipmentModel);
-
-        actLab =
-                findViewById(R.id.actLab);
-
-        stateDropdown =
-                findViewById(R.id.actState);
-
-        editEquipment =
-                findViewById(R.id.btn_edit_equipment);
-
-        deleteEquipment =
-                findViewById(R.id.btn_delete_equipment);
+        equipmentName = findViewById(R.id.equipmentName);
+        equipmentModel = findViewById(R.id.equipmentModel);
+        actLab = findViewById(R.id.actLab);
+        stateDropdown = findViewById(R.id.actState);
+        editEquipment = findViewById(R.id.btn_edit_equipment);
+        deleteEquipment = findViewById(R.id.btn_delete_equipment);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void setupLabDropdown() {
@@ -149,18 +105,13 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
     private void setupStateDropdown() {
 
-        String[] states =
-                getResources().getStringArray(
-                        R.array.equipment_states
-                );
+        String[] states = getResources().getStringArray(R.array.equipment_states);
 
-        ArrayAdapter<String> stateAdapter =
-                new ArrayAdapter<>(
-                        this,
-                        com.google.android.material.R.layout
-                                .mtrl_auto_complete_simple_item,
-                        states
-                );
+        ArrayAdapter<String> stateAdapter = new ArrayAdapter<>(
+                this,
+                com.google.android.material.R.layout.mtrl_auto_complete_simple_item,
+                states
+        );
 
         stateDropdown.setAdapter(stateAdapter);
 
@@ -172,67 +123,32 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
     private void setupButtons() {
 
-        editEquipment.setOnClickListener(
-                v -> updateEquipment()
-        );
-
-        deleteEquipment.setOnClickListener(
-                v -> confirmDelete()
-        );
+        editEquipment.setOnClickListener(v -> updateEquipment());
+        deleteEquipment.setOnClickListener(v -> confirmDelete());
     }
 
     private void updateEquipment() {
 
-        String name =
-                equipmentName
-                        .getText()
-                        .toString()
-                        .trim()
-                        .replaceAll("\\s+", " ");
+        String name = equipmentName.getText().toString().trim().replaceAll("\\s+", " ");
+        String model = equipmentModel.getText().toString().trim().replaceAll("\\s+", " ");
+        String lab = actLab.getText().toString().trim();
+        String state = stateDropdown.getText().toString().trim();
 
-        String model =
-                equipmentModel
-                        .getText()
-                        .toString()
-                        .trim()
-                        .replaceAll("\\s+", " ");
+        if (name.isEmpty() || model.isEmpty() || lab.isEmpty() || state.isEmpty()) {
 
-        String lab =
-                actLab
-                        .getText()
-                        .toString()
-                        .trim();
-
-        String state =
-                stateDropdown
-                        .getText()
-                        .toString()
-                        .trim();
-
-        if (name.isEmpty()
-                || model.isEmpty()
-                || lab.isEmpty()
-                || state.isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Fill all details",
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, "Fill all details", Toast.LENGTH_LONG).show();
 
             return;
         }
 
         if (qrId == null || qrId.isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    "Equipment ID missing",
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, "Equipment ID missing", Toast.LENGTH_LONG).show();
 
             return;
         }
+
+        loadingOverlay.setVisibility(View.VISIBLE);
 
         db.collection("equipment")
                 .whereEqualTo("qrId", qrId)
@@ -241,31 +157,22 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
                     if (snapshot.isEmpty()) {
 
-                        Toast.makeText(
-                                this,
-                                "Equipment not found",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        loadingOverlay.setVisibility(View.GONE);
+
+                        Toast.makeText(this, "Equipment not found", Toast.LENGTH_LONG).show();
 
                         return;
                     }
 
-                    DocumentSnapshot document =
-                            snapshot.getDocuments().get(0);
-
-                    String documentId =
-                            document.getId();
-
-                    String currentState =
-                            document.getString("state");
+                    DocumentSnapshot document = snapshot.getDocuments().get(0);
+                    String documentId = document.getId();
+                    String currentState = document.getString("state");
 
                     if (Constants.STATE_BORROWED.equalsIgnoreCase(currentState)) {
 
-                        Toast.makeText(
-                                this,
-                                "Borrowed equipment cannot be edited. Return the equipment first.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        loadingOverlay.setVisibility(View.GONE);
+
+                        Toast.makeText(this, "Borrowed equipment cannot be edited. Return the equipment first.", Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -273,11 +180,9 @@ public class EditEquipmentActivity extends AppCompatActivity {
                     // Borrowed is not a valid manually selected state.
                     if ("Borrowed".equalsIgnoreCase(state)) {
 
-                        Toast.makeText(
-                                this,
-                                "Equipment cannot be manually set to Borrowed. Use the borrowing flow.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        loadingOverlay.setVisibility(View.GONE);
+
+                        Toast.makeText(this, "Equipment cannot be manually set to Borrowed. Use the borrowing flow.", Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -296,30 +201,24 @@ public class EditEquipmentActivity extends AppCompatActivity {
                             )
                             .addOnSuccessListener(unused -> {
 
-                                Toast.makeText(
-                                        this,
-                                        "Equipment Successfully Updated",
-                                        Toast.LENGTH_LONG
-                                ).show();
+                                loadingOverlay.setVisibility(View.GONE);
+
+                                Toast.makeText(this, "Equipment Successfully Updated", Toast.LENGTH_LONG).show();
 
                                 finish();
                             })
                             .addOnFailureListener(e -> {
 
-                                Toast.makeText(
-                                        this,
-                                        e.getMessage(),
-                                        Toast.LENGTH_LONG
-                                ).show();
+                                loadingOverlay.setVisibility(View.GONE);
+
+                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                             });
                 })
                 .addOnFailureListener(e -> {
 
-                    Toast.makeText(
-                            this,
-                            e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    loadingOverlay.setVisibility(View.GONE);
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -327,23 +226,16 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Confirm Delete")
-                .setMessage(
-                        "Do you want to remove this equipment?"
-                )
+                .setMessage("Do you want to remove this equipment?")
                 .setCancelable(false)
-
                 .setPositiveButton(
                         "Remove",
-                        (dialog, which) ->
-                                removeEquipment()
+                        (dialog, which) -> removeEquipment()
                 )
-
                 .setNegativeButton(
                         "Cancel",
-                        (dialog, which) ->
-                                dialog.dismiss()
+                        (dialog, which) -> dialog.dismiss()
                 )
-
                 .show();
     }
 
@@ -351,48 +243,35 @@ public class EditEquipmentActivity extends AppCompatActivity {
 
         if (qrId == null || qrId.isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    "Equipment ID missing",
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, "Equipment ID missing", Toast.LENGTH_LONG).show();
 
             return;
         }
+
+        loadingOverlay.setVisibility(View.VISIBLE);
 
         db.collection("equipment")
                 .whereEqualTo("qrId", qrId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
+                    loadingOverlay.setVisibility(View.GONE);
+
                     if (snapshot.isEmpty()) {
 
-                        Toast.makeText(
-                                this,
-                                "Equipment not found",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Equipment not found", Toast.LENGTH_LONG).show();
 
                         return;
                     }
 
-                    DocumentSnapshot document =
-                            snapshot.getDocuments().get(0);
-
-                    String documentId =
-                            document.getId();
-
-                    String state =
-                            document.getString("state");
+                    DocumentSnapshot document = snapshot.getDocuments().get(0);
+                    String documentId = document.getId();
+                    String state = document.getString("state");
 
                     // Don't remove borrowed equipment.
                     if (Constants.STATE_BORROWED.equalsIgnoreCase(state)) {
 
-                        Toast.makeText(
-                                this,
-                                "Borrowed equipment cannot be removed. Return the equipment first.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Borrowed equipment cannot be removed. Return the equipment first.", Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -400,11 +279,7 @@ public class EditEquipmentActivity extends AppCompatActivity {
                     // Already removed
                     if (Constants.STATE_REMOVED.equalsIgnoreCase(state)) {
 
-                        Toast.makeText(
-                                this,
-                                "This equipment is already removed.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "This equipment is already removed.", Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -417,30 +292,24 @@ public class EditEquipmentActivity extends AppCompatActivity {
                             )
                             .addOnSuccessListener(unused -> {
 
-                                Toast.makeText(
-                                        this,
-                                        "Equipment Successfully Removed",
-                                        Toast.LENGTH_LONG
-                                ).show();
+                                loadingOverlay.setVisibility(View.GONE);
+
+                                Toast.makeText(this, "Equipment Successfully Removed", Toast.LENGTH_LONG).show();
 
                                 finish();
                             })
                             .addOnFailureListener(e -> {
 
-                                Toast.makeText(
-                                        this,
-                                        e.getMessage(),
-                                        Toast.LENGTH_LONG
-                                ).show();
+                                loadingOverlay.setVisibility(View.GONE);
+
+                                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                             });
                 })
                 .addOnFailureListener(e -> {
 
-                    Toast.makeText(
-                            this,
-                            e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    loadingOverlay.setVisibility(View.GONE);
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -450,33 +319,28 @@ public class EditEquipmentActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
+                    loadingOverlay.setVisibility(View.GONE);
+
                     labNames.clear();
 
                     for (DocumentSnapshot doc : snapshot) {
 
-                        String labName =
-                                doc.getString("labName");
+                        String labName = doc.getString("labName");
 
-                        if (labName != null
-                                && !labName.isEmpty()) {
-
+                        if (labName != null && !labName.isEmpty()) {
                             labNames.add(labName);
                         }
                     }
 
-                    labNames.sort(
-                            String::compareToIgnoreCase
-                    );
+                    labNames.sort(String::compareToIgnoreCase);
 
                     labAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
 
-                    Toast.makeText(
-                            this,
-                            e.getMessage(),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    loadingOverlay.setVisibility(View.GONE);
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }

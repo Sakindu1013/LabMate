@@ -27,7 +27,8 @@ public class LabDetailsViewModel extends ViewModel {
     }
 
     public void loadEquipmentSummary(
-            String labName
+            String labName,
+            boolean showLoading
     ) {
 
         if (labName == null
@@ -42,9 +43,12 @@ public class LabDetailsViewModel extends ViewModel {
             return;
         }
 
-        state.setValue(
-                LabDetailsState.loading()
-        );
+        if (showLoading) {
+
+            state.setValue(
+                    LabDetailsState.loading()
+            );
+        }
 
         labRepository.getEquipmentSummary(
                 labName,

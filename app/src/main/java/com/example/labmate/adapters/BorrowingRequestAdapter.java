@@ -3,6 +3,8 @@ package com.example.labmate.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,14 +14,9 @@ import com.example.labmate.models.BorrowingRequest;
 import com.example.labmate.utils.Constants;
 import com.google.android.material.button.MaterialButton;
 
-import android.widget.TextView;
-import android.widget.Toast;
-
 import java.util.ArrayList;
 
-public class BorrowingRequestAdapter
-        extends RecyclerView.Adapter<
-        BorrowingRequestAdapter.ViewHolder> {
+public class BorrowingRequestAdapter extends RecyclerView.Adapter<BorrowingRequestAdapter.ViewHolder> {
 
     public interface RequestActionListener {
 
@@ -53,13 +50,12 @@ public class BorrowingRequestAdapter
             int viewType
     ) {
 
-        View view =
-                LayoutInflater.from(parent.getContext())
-                        .inflate(
-                                R.layout.item_borrowing_request,
-                                parent,
-                                false
-                        );
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(
+                        R.layout.item_borrowing_request,
+                        parent,
+                        false
+                );
 
         return new ViewHolder(view);
     }
@@ -70,8 +66,7 @@ public class BorrowingRequestAdapter
             int position
     ) {
 
-        BorrowingRequest request =
-                requestList.get(position);
+        BorrowingRequest request = requestList.get(position);
 
         holder.requestId.setText(
                 request.getEquipmentName() != null
@@ -109,83 +104,49 @@ public class BorrowingRequestAdapter
         if (request.getRequestedAt() != null) {
 
             holder.requestedAt.setText(
-                    "Requested: "
-                            + request.getRequestedAt()
-                            .toDate()
-                            .toString()
+                    "Requested: " + request.getRequestedAt().toDate().toString()
             );
 
         } else {
 
-            holder.requestedAt.setText(
-                    "Requested: Unknown"
-            );
+            holder.requestedAt.setText("Requested: Unknown");
         }
 
-        String status =
-                request.getStatus();
+        String status = request.getStatus();
 
         holder.requestStatus.setText(
-                "Status: "
-                        + (
-                        status != null
-                                ? status
-                                : "Unknown"
-                )
+                "Status: " + (status != null ? status : "Unknown")
         );
 
         boolean canManageRequest =
-                showActions
-                        && Constants.REQUEST_PENDING.equalsIgnoreCase(
-                        status
-                );
+                showActions && Constants.REQUEST_PENDING.equalsIgnoreCase(status);
 
         if (canManageRequest) {
 
-            holder.approveButton.setVisibility(
-                    View.VISIBLE
-            );
+            holder.approveButton.setVisibility(View.VISIBLE);
+            holder.rejectButton.setVisibility(View.VISIBLE);
 
-            holder.rejectButton.setVisibility(
-                    View.VISIBLE
-            );
+            holder.approveButton.setOnClickListener(v -> {
 
-            holder.approveButton.setOnClickListener(
-                    v -> {
+                if (listener != null) {
+                    listener.onApprove(request);
+                }
+            });
 
-                        if (listener != null) {
-                            listener.onApprove(request);
-                        }
-                    }
-            );
+            holder.rejectButton.setOnClickListener(v -> {
 
-            holder.rejectButton.setOnClickListener(
-                    v -> {
-
-                        if (listener != null) {
-                            listener.onReject(request);
-                        }
-                    }
-            );
-
+                if (listener != null) {
+                    listener.onReject(request);
+                }
+            });
 
         } else {
 
-            holder.approveButton.setVisibility(
-                    View.GONE
-            );
+            holder.approveButton.setVisibility(View.GONE);
+            holder.rejectButton.setVisibility(View.GONE);
 
-            holder.rejectButton.setVisibility(
-                    View.GONE
-            );
-
-            holder.approveButton.setOnClickListener(
-                    null
-            );
-
-            holder.rejectButton.setOnClickListener(
-                    null
-            );
+            holder.approveButton.setOnClickListener(null);
+            holder.rejectButton.setOnClickListener(null);
         }
     }
 
@@ -195,8 +156,7 @@ public class BorrowingRequestAdapter
         return requestList.size();
     }
 
-    public static class ViewHolder
-            extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView requestId;
         TextView equipmentId;
@@ -208,51 +168,41 @@ public class BorrowingRequestAdapter
         MaterialButton approveButton;
         MaterialButton rejectButton;
 
-        public ViewHolder(
-                @NonNull View itemView
-        ) {
+        public ViewHolder(@NonNull View itemView) {
 
             super(itemView);
 
-            requestId =
-                    itemView.findViewById(
-                            R.id.requestId
-                    );
+            requestId = itemView.findViewById(
+                    R.id.requestId
+            );
 
-            equipmentId =
-                    itemView.findViewById(
-                            R.id.requestEquipmentId
-                    );
+            equipmentId = itemView.findViewById(
+                    R.id.requestEquipmentId
+            );
 
-            equipmentQrId =
-                    itemView.findViewById(
-                            R.id.requestEquipmentQrId
-                    );
+            equipmentQrId = itemView.findViewById(
+                    R.id.requestEquipmentQrId
+            );
 
-            userId =
-                    itemView.findViewById(
-                            R.id.requestUserId
-                    );
+            userId = itemView.findViewById(
+                    R.id.requestUserId
+            );
 
-            requestedAt =
-                    itemView.findViewById(
-                            R.id.requestedAt
-                    );
+            requestedAt = itemView.findViewById(
+                    R.id.requestedAt
+            );
 
-            requestStatus =
-                    itemView.findViewById(
-                            R.id.requestStatus
-                    );
+            requestStatus = itemView.findViewById(
+                    R.id.requestStatus
+            );
 
-            approveButton =
-                    itemView.findViewById(
-                            R.id.btn_approve
-                    );
+            approveButton = itemView.findViewById(
+                    R.id.btn_approve
+            );
 
-            rejectButton =
-                    itemView.findViewById(
-                            R.id.btn_reject
-                    );
+            rejectButton = itemView.findViewById(
+                    R.id.btn_reject
+            );
         }
     }
 }

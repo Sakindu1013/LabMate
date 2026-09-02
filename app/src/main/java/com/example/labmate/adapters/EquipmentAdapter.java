@@ -23,8 +23,7 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.util.ArrayList;
 
-public class EquipmentAdapter
-        extends RecyclerView.Adapter<EquipmentAdapter.EquipmentViewHolder> {
+public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.EquipmentViewHolder> {
 
     private final Context context;
     private final ArrayList<Equipment> equipmentList;
@@ -62,8 +61,7 @@ public class EquipmentAdapter
             @NonNull EquipmentViewHolder holder,
             int position) {
 
-        Equipment equipment =
-                equipmentList.get(position);
+        Equipment equipment = equipmentList.get(position);
 
         holder.name.setText(
                 equipment.getEquipmentName()
@@ -135,6 +133,7 @@ public class EquipmentAdapter
 
     @Override
     public int getItemCount() {
+
         return equipmentList.size();
     }
 
@@ -146,17 +145,17 @@ public class EquipmentAdapter
                 R.layout.dialog_qr
         );
 
-        ImageView qrImage =
-                dialog.findViewById(R.id.qrImage);
+        ImageView qrImage = dialog.findViewById(
+                R.id.qrImage
+        );
 
-        TextView qrText =
-                dialog.findViewById(R.id.qrText);
+        TextView qrText = dialog.findViewById(
+                R.id.qrText
+        );
 
-        String qrValue =
-                equipment.getQrId();
+        String qrValue = equipment.getQrId();
 
-        Bitmap bitmap =
-                generateQRCode(qrValue);
+        Bitmap bitmap = generateQRCode(qrValue);
 
         qrImage.setImageBitmap(bitmap);
 
@@ -173,8 +172,7 @@ public class EquipmentAdapter
             return null;
         }
 
-        BarcodeEncoder barcodeEncoder =
-                new BarcodeEncoder();
+        BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
 
         try {
             return barcodeEncoder.encodeBitmap(
@@ -190,8 +188,7 @@ public class EquipmentAdapter
         }
     }
 
-    public static class EquipmentViewHolder
-            extends RecyclerView.ViewHolder {
+    public static class EquipmentViewHolder extends RecyclerView.ViewHolder {
 
         TextView name;
         TextView model;
@@ -201,8 +198,7 @@ public class EquipmentAdapter
 
         MaterialButton edit;
 
-        public EquipmentViewHolder(
-                @NonNull View itemView) {
+        public EquipmentViewHolder(@NonNull View itemView) {
 
             super(itemView);
 

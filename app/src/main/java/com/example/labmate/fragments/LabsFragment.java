@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -29,7 +30,7 @@ public class LabsFragment extends Fragment {
     private ArrayList<Lab> labList;
     private LabAdapter adapter;
     private Button buttonAddLab;
-
+    private FrameLayout loadingOverlay;
     private LabsViewModel labsViewModel;
 
     public LabsFragment() {
@@ -62,25 +63,16 @@ public class LabsFragment extends Fragment {
             View view,
             Bundle savedInstanceState
     ) {
-        super.onViewCreated(
-                view,
-                savedInstanceState
-        );
+        super.onViewCreated(view, savedInstanceState);
 
         labsViewModel.loadLabs();
     }
 
     private void initializeViews(View view) {
 
-        recyclerView =
-                view.findViewById(
-                        R.id.labRecyclerView
-                );
-
-        buttonAddLab =
-                view.findViewById(
-                        R.id.manage_labs
-                );
+        recyclerView = view.findViewById(R.id.labRecyclerView);
+        buttonAddLab = view.findViewById(R.id.manage_labs);
+        loadingOverlay = view.findViewById(R.id.loadingOverlay);
     }
 
     private void setupRecyclerView() {
@@ -88,9 +80,7 @@ public class LabsFragment extends Fragment {
         labList = new ArrayList<>();
 
         recyclerView.setLayoutManager(
-                new LinearLayoutManager(
-                        requireContext()
-                )
+                new LinearLayoutManager(requireContext())
         );
 
         // Initially false.
@@ -107,9 +97,8 @@ public class LabsFragment extends Fragment {
 
     private void setupViewModel() {
 
-        labsViewModel =
-                new ViewModelProvider(this)
-                        .get(LabsViewModel.class);
+        labsViewModel = new ViewModelProvider(this)
+                .get(LabsViewModel.class);
 
         labsViewModel.getLabsState()
                 .observe(
@@ -122,19 +111,16 @@ public class LabsFragment extends Fragment {
 
         buttonAddLab.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            AddLabActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    AddLabActivity.class
+            );
 
             startActivity(intent);
         });
     }
 
-    private void handleLabsState(
-            LabsState state
-    ) {
+    private void handleLabsState(LabsState state) {
 
         if (state == null) {
             return;
@@ -151,6 +137,7 @@ public class LabsFragment extends Fragment {
                 break;
 
             case ERROR:
+                loadingOverlay.setVisibility(View.GONE);
                 showError(state.getMessage());
                 break;
 
@@ -162,15 +149,14 @@ public class LabsFragment extends Fragment {
 
     private void handleLoading() {
 
-        // You can add a ProgressBar here later.
+        loadingOverlay.setVisibility(View.VISIBLE);
     }
 
-    private void displayLabs(
-            LabsState state
-    ) {
+    private void displayLabs(LabsState state) {
 
-        boolean isAdmin =
-                state.isAdmin();
+        loadingOverlay.setVisibility(View.GONE);
+
+        boolean isAdmin = state.isAdmin();
 
         // Show/hide Add Lab button.
         buttonAddLab.setVisibility(
@@ -186,9 +172,7 @@ public class LabsFragment extends Fragment {
         labList.clear();
 
         if (state.getLabs() != null) {
-            labList.addAll(
-                    state.getLabs()
-            );
+            labList.addAll(state.getLabs());
         }
 
         adapter.notifyDataSetChanged();

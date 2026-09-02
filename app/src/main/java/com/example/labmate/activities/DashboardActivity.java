@@ -10,33 +10,31 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.labmate.R;
 import com.example.labmate.fragments.EquipmentFragment;
 import com.example.labmate.fragments.HomeFragment;
 import com.example.labmate.fragments.LabsFragment;
 import com.example.labmate.fragments.ProfileFragment;
-import com.example.labmate.R;
+import com.example.labmate.utils.UserSession;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
-import com.example.labmate.utils.UserSession;
 
 public class DashboardActivity extends AppCompatActivity {
-    private BottomNavigationView bottomNavigation;
 
+    private BottomNavigationView bottomNavigation;
     private UserSession userSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                    return insets;
-                }
-        );
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         userSession = new UserSession(this);
 
@@ -48,19 +46,15 @@ public class DashboardActivity extends AppCompatActivity {
 
             if (id == R.id.nav_home) {
                 fragment = new HomeFragment();
-            }
-            else if (id == R.id.nav_equipment) {
+            } else if (id == R.id.nav_equipment) {
                 fragment = new EquipmentFragment();
-            }
-            else if (id == R.id.nav_profile) {
+            } else if (id == R.id.nav_profile) {
                 fragment = new ProfileFragment();
-            }
-            else if (id == R.id.nav_lab) {
+            } else if (id == R.id.nav_lab) {
                 fragment = new LabsFragment();
             }
 
             if (fragment != null) {
-
                 loadFragment(fragment);
                 return true;
             }
@@ -68,7 +62,7 @@ public class DashboardActivity extends AppCompatActivity {
             return false;
         });
 
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             bottomNavigation.setSelectedItemId(R.id.nav_home);
         }
 
@@ -79,73 +73,49 @@ public class DashboardActivity extends AppCompatActivity {
                     @Override
                     public void handleOnBackPressed() {
 
-                        Fragment currentFragment =
-                                getSupportFragmentManager()
-                                        .findFragmentById(
-                                                R.id.fragmentContainer
-                                        );
+                        Fragment currentFragment = getSupportFragmentManager()
+                                .findFragmentById(R.id.fragmentContainer);
 
                         if (currentFragment instanceof HomeFragment) {
 
-                            new MaterialAlertDialogBuilder(
-                                    DashboardActivity.this
-                            )
+                            new MaterialAlertDialogBuilder(DashboardActivity.this)
                                     .setTitle("Logout")
-                                    .setMessage(
-                                            "Are you sure you want to logout?"
-                                    )
-                                    .setNegativeButton(
-                                            "Cancel",
-                                            null
-                                    )
-                                    .setPositiveButton(
-                                            "Logout",
-                                            (dialog, which) -> {
+                                    .setMessage("Are you sure you want to logout?")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Logout", (dialog, which) -> {
 
-                                                userSession.clear();
+                                        userSession.clear();
 
-                                                FirebaseAuth
-                                                        .getInstance()
-                                                        .signOut();
+                                        FirebaseAuth.getInstance().signOut();
 
-                                                Intent intent =
-                                                        new Intent(
-                                                                DashboardActivity.this,
-                                                                LoginActivity.class
-                                                        );
+                                        Intent intent = new Intent(
+                                                DashboardActivity.this,
+                                                LoginActivity.class
+                                        );
 
-                                                intent.setFlags(
-                                                        Intent.FLAG_ACTIVITY_NEW_TASK
-                                                                | Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                                );
+                                        intent.setFlags(
+                                                Intent.FLAG_ACTIVITY_NEW_TASK
+                                                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                        );
 
-                                                startActivity(intent);
-                                                finish();
-                                            }
-                                    )
+                                        startActivity(intent);
+                                        finish();
+                                    })
                                     .show();
 
                         } else {
-
-                            bottomNavigation.setSelectedItemId(
-                                    R.id.nav_home
-                            );
+                            bottomNavigation.setSelectedItemId(R.id.nav_home);
                         }
                     }
                 }
         );
     }
 
-    private void loadFragment(Fragment fragment){
+    private void loadFragment(Fragment fragment) {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(
-                        R.id.fragmentContainer,
-                        fragment
-                )
+                .replace(R.id.fragmentContainer, fragment)
                 .commit();
-
     }
-
 }

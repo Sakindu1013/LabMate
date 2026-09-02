@@ -25,19 +25,13 @@ public class BorrowingViewModel extends ViewModel {
     private final EquipmentRepository equipmentRepository;
     private final UserRepository userRepository;
 
-    private final MutableLiveData<String> message =
-            new MutableLiveData<>();
+    private final MutableLiveData<String> message = new MutableLiveData<>();
 
     public BorrowingViewModel() {
 
-        borrowingRepository =
-                new BorrowingRepository();
-
-        equipmentRepository =
-                new EquipmentRepository();
-
-        userRepository =
-                new UserRepository();
+        borrowingRepository = new BorrowingRepository();
+        equipmentRepository = new EquipmentRepository();
+        userRepository = new UserRepository();
     }
 
     public LiveData<String> getMessage() {
@@ -45,8 +39,8 @@ public class BorrowingViewModel extends ViewModel {
     }
 
     // ============================================================
-// LOAD ACTIVE BORROWINGS
-// ============================================================
+    // LOAD ACTIVE BORROWINGS
+    // ============================================================
 
     public void loadActiveBorrowings(
             String userId,
@@ -127,8 +121,7 @@ public class BorrowingViewModel extends ViewModel {
             UserBorrowingsListener listener
     ) {
 
-        if (userId == null
-                || userId.trim().isEmpty()) {
+        if (userId == null || userId.trim().isEmpty()) {
 
             message.setValue(
                     "User information is missing."
@@ -156,7 +149,6 @@ public class BorrowingViewModel extends ViewModel {
         );
     }
 
-
     // ============================================================
     // LOAD BORROWING HISTORY
     // ============================================================
@@ -167,8 +159,7 @@ public class BorrowingViewModel extends ViewModel {
             BorrowingHistoryListener listener
     ) {
 
-        if (userId == null
-                || userId.trim().isEmpty()) {
+        if (userId == null || userId.trim().isEmpty()) {
 
             message.setValue(
                     "User information is missing."
@@ -177,8 +168,7 @@ public class BorrowingViewModel extends ViewModel {
             return;
         }
 
-        if (role == null
-                || role.trim().isEmpty()) {
+        if (role == null || role.trim().isEmpty()) {
 
             message.setValue(
                     "User role information is missing."
@@ -243,8 +233,7 @@ public class BorrowingViewModel extends ViewModel {
             return;
         }
 
-        Borrowing borrowing =
-                borrowings.get(index);
+        Borrowing borrowing = borrowings.get(index);
 
         loadEquipmentDetails(
                 borrowing,
@@ -270,8 +259,7 @@ public class BorrowingViewModel extends ViewModel {
             String equipmentId
     ) {
 
-        if (borrowingId == null
-                || borrowingId.trim().isEmpty()) {
+        if (borrowingId == null || borrowingId.trim().isEmpty()) {
 
             message.setValue(
                     "Borrowing information is missing."
@@ -280,8 +268,7 @@ public class BorrowingViewModel extends ViewModel {
             return;
         }
 
-        if (equipmentId == null
-                || equipmentId.trim().isEmpty()) {
+        if (equipmentId == null || equipmentId.trim().isEmpty()) {
 
             message.setValue(
                     "Equipment information is missing."
@@ -295,8 +282,7 @@ public class BorrowingViewModel extends ViewModel {
 
                 borrowing -> {
 
-                    if (borrowing == null
-                            || !borrowing.exists()) {
+                    if (borrowing == null || !borrowing.exists()) {
 
                         message.setValue(
                                 "Borrowing record not found."
@@ -305,12 +291,9 @@ public class BorrowingViewModel extends ViewModel {
                         return;
                     }
 
-                    String status =
-                            borrowing.getString("status");
+                    String status = borrowing.getString("status");
 
-                    if (!Constants.BORROWING_ACTIVE.equals(
-                            status
-                    )) {
+                    if (!Constants.BORROWING_ACTIVE.equals(status)) {
 
                         message.setValue(
                                 "This equipment is not waiting for checkout."
@@ -319,9 +302,7 @@ public class BorrowingViewModel extends ViewModel {
                         return;
                     }
 
-                    if (borrowing.getTimestamp(
-                            "borrowedAt"
-                    ) != null) {
+                    if (borrowing.getTimestamp("borrowedAt") != null) {
 
                         message.setValue(
                                 "This equipment has already been checked out."
@@ -392,28 +373,20 @@ public class BorrowingViewModel extends ViewModel {
             QuerySnapshot snapshot
     ) {
 
-        ArrayList<Borrowing> borrowingList =
-                new ArrayList<>();
+        ArrayList<Borrowing> borrowingList = new ArrayList<>();
 
-        for (DocumentSnapshot document :
-                snapshot.getDocuments()) {
+        for (DocumentSnapshot document : snapshot.getDocuments()) {
 
             Borrowing borrowing =
-                    document.toObject(
-                            Borrowing.class
-                    );
+                    document.toObject(Borrowing.class);
 
             if (borrowing == null) {
                 continue;
             }
 
-            borrowing.setId(
-                    document.getId()
-            );
+            borrowing.setId(document.getId());
 
-            borrowingList.add(
-                    borrowing
-            );
+            borrowingList.add(borrowing);
         }
 
         return borrowingList;
@@ -436,8 +409,7 @@ public class BorrowingViewModel extends ViewModel {
 
                 equipment -> {
 
-                    if (equipment != null
-                            && equipment.exists()) {
+                    if (equipment != null && equipment.exists()) {
 
                         borrowing.setEquipmentName(
                                 equipment.getString("equipmentName")
@@ -485,8 +457,7 @@ public class BorrowingViewModel extends ViewModel {
 
                 user -> {
 
-                    if (user != null
-                            && user.exists()) {
+                    if (user != null && user.exists()) {
 
                         borrowing.setUserName(
                                 user.getString("name")
@@ -511,8 +482,7 @@ public class BorrowingViewModel extends ViewModel {
             BorrowingDisplayListener listener
     ) {
 
-        if (userId == null
-                || userId.trim().isEmpty()) {
+        if (userId == null || userId.trim().isEmpty()) {
 
             message.setValue(
                     "User information is missing."
@@ -521,8 +491,7 @@ public class BorrowingViewModel extends ViewModel {
             return;
         }
 
-        if (role == null
-                || role.trim().isEmpty()) {
+        if (role == null || role.trim().isEmpty()) {
 
             message.setValue(
                     "User role information is missing."
@@ -572,15 +541,12 @@ public class BorrowingViewModel extends ViewModel {
 
         if (index >= borrowings.size()) {
 
-            listener.onLoaded(
-                    displayItems
-            );
+            listener.onLoaded(displayItems);
 
             return;
         }
 
-        Borrowing borrowing =
-                borrowings.get(index);
+        Borrowing borrowing = borrowings.get(index);
 
         equipmentRepository.getById(
                 borrowing.getEquipmentId(),
@@ -602,9 +568,7 @@ public class BorrowingViewModel extends ViewModel {
                     }
 
                     Equipment equipment =
-                            equipmentDocument.toObject(
-                                    Equipment.class
-                            );
+                            equipmentDocument.toObject(Equipment.class);
 
                     if (equipment == null) {
 
@@ -622,9 +586,7 @@ public class BorrowingViewModel extends ViewModel {
                     BorrowingDisplayItem item =
                             new BorrowingDisplayItem();
 
-                    item.setBorrowingId(
-                            borrowing.getId()
-                    );
+                    item.setBorrowingId(borrowing.getId());
 
                     item.setEquipmentName(
                             equipment.getEquipmentName()
@@ -667,9 +629,7 @@ public class BorrowingViewModel extends ViewModel {
                                             && userDocument.exists()) {
 
                                         User user =
-                                                userDocument.toObject(
-                                                        User.class
-                                                );
+                                                userDocument.toObject(User.class);
 
                                         if (user != null) {
 
@@ -766,5 +726,4 @@ public class BorrowingViewModel extends ViewModel {
                 ArrayList<BorrowingDisplayItem> items
         );
     }
-
 }

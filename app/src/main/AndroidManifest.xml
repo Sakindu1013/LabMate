@@ -31,6 +31,7 @@
             android:exported="false" />
         <activity
             android:name=".activities.QRScannerActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".activities.EditEquipmentActivity"
@@ -80,6 +81,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation"
+            android:theme="@style/zxing_CaptureTheme" />
     </application>
 
 </manifest>

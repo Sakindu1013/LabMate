@@ -1,10 +1,12 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class AddLabActivity extends AppCompatActivity {
 
     private AddLabViewModel viewModel;
-
+    private FrameLayout loadingOverlay;
     private EditText labName;
     private EditText personInCharge;
     private AutoCompleteTextView locationDropdown;
@@ -30,34 +32,15 @@ public class AddLabActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(
-                R.layout.activity_add_lab
-        );
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
+        setContentView(R.layout.activity_add_lab);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                     return insets;
                 }
         );
 
-        viewModel =
-                new ViewModelProvider(this)
-                        .get(AddLabViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AddLabViewModel.class);
 
         initializeViews();
         setupLocationDropdown();
@@ -67,119 +50,55 @@ public class AddLabActivity extends AppCompatActivity {
 
     private void initializeViews() {
 
-        labName =
-                findViewById(R.id.labName);
-
-        personInCharge =
-                findViewById(R.id.personInCharge);
-
-        locationDropdown =
-                findViewById(R.id.actLocation);
+        labName = findViewById(R.id.labName);
+        personInCharge = findViewById(R.id.personInCharge);
+        locationDropdown = findViewById(R.id.actLocation);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void setupLocationDropdown() {
 
-        String[] locations =
-                getResources()
-                        .getStringArray(
-                                R.array.lab_locations
-                        );
+        String[] locations = getResources().getStringArray(R.array.lab_locations);
 
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        com.google.android.material.R.layout
-                                .mtrl_auto_complete_simple_item,
-                        locations
-                );
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, com.google.android.material.R.layout.mtrl_auto_complete_simple_item, locations);
 
         locationDropdown.setAdapter(adapter);
-
-        locationDropdown.setOnItemClickListener(
-                (parent, view, position, id) ->
-                        locationDropdown.clearFocus()
-        );
+        locationDropdown.setOnItemClickListener((parent, view, position, id) -> locationDropdown.clearFocus());
     }
 
     private void setupListeners() {
 
-        Button clearButton =
-                findViewById(R.id.btn_clear);
+        Button clearButton = findViewById(R.id.btn_clear);
+        clearButton.setOnClickListener(v -> showClearConfirmation());
 
-        clearButton.setOnClickListener(
-                v -> showClearConfirmation()
-        );
-
-        Button addButton =
-                findViewById(R.id.btn_add_lab);
-
-        addButton.setOnClickListener(
-                v -> addLab()
-        );
+        Button addButton = findViewById(R.id.btn_add_lab);
+        addButton.setOnClickListener(v -> addLab());
     }
 
     private void addLab() {
 
-        String name =
-                labName.getText()
-                        .toString()
-                        .trim()
-                        .replaceAll("\\s+", " ");
+        String name = labName.getText().toString().trim().replaceAll("\\s+", " ");
+        String inCharge = personInCharge.getText().toString().trim().replaceAll("\\s+", " ");
+        String location = locationDropdown.getText().toString().trim();
 
-        String inCharge =
-                personInCharge.getText()
-                        .toString()
-                        .trim()
-                        .replaceAll("\\s+", " ");
+        if (name.isEmpty() || inCharge.isEmpty() || location.isEmpty()) {
 
-        String location =
-                locationDropdown.getText()
-                        .toString()
-                        .trim();
-
-        if (name.isEmpty()
-                || inCharge.isEmpty()
-                || location.isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Fill all details",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, "Fill all details", Toast.LENGTH_LONG).show();
             return;
         }
 
-        UserSession session =
-                new UserSession(this);
+        UserSession session = new UserSession(this);
+        String username = session.getName();
+        String role = session.getRole();
 
-        String username =
-                session.getName();
-
-        String role =
-                session.getRole();
-
-        viewModel.addLab(
-                name,
-                inCharge,
-                location,
-                username,
-                role
-        );
+        viewModel.addLab(name, inCharge, location, username, role);
     }
 
     private void observeViewModel() {
-
-        viewModel.getState()
-                .observe(
-                        this,
-                        this::handleState
-                );
+        viewModel.getState().observe(this, this::handleState);
     }
 
-    private void handleState(
-            AddLabState state
-    ) {
+    private void handleState(AddLabState state) {
 
         if (state == null) {
             return;
@@ -188,32 +107,22 @@ public class AddLabActivity extends AppCompatActivity {
         switch (state.getStatus()) {
 
             case LOADING:
-                // Disable button / show progress later.
+
+                loadingOverlay.setVisibility(View.VISIBLE);
                 break;
 
             case SUCCESS:
 
-                Toast.makeText(
-                        this,
-                        state.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
-
+                loadingOverlay.setVisibility(View.GONE);
+                Toast.makeText(this, state.getMessage(), Toast.LENGTH_LONG).show();
                 clearForm();
                 finish();
-
                 break;
 
             case ERROR:
 
-                Toast.makeText(
-                        this,
-                        state.getMessage() != null
-                                ? state.getMessage()
-                                : "Failed to add laboratory.",
-                        Toast.LENGTH_LONG
-                ).show();
-
+                loadingOverlay.setVisibility(View.GONE);
+                Toast.makeText(this, state.getMessage() != null ? state.getMessage() : "Failed to add laboratory.", Toast.LENGTH_LONG).show();
                 break;
 
             case IDLE:
@@ -226,9 +135,7 @@ public class AddLabActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Clear Form")
-                .setMessage(
-                        "Do you want to clear the form?"
-                )
+                .setMessage("Do you want to clear the form?")
                 .setCancelable(false)
                 .setPositiveButton(
                         "Clear",

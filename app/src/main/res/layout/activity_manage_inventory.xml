@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_color"
-    android:fillViewport="true"
-    android:id="@+id/main">
+    android:background="@color/background_color">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@color/background_color"
         android:padding="20dp">
 
         <!-- Header Section -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -54,6 +56,7 @@
             android:orientation="vertical">
 
             <!-- Scan Button -->
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_scan_qr"
                 android:layout_width="match_parent"
@@ -72,6 +75,7 @@
                 android:gravity="center">
 
                 <!-- Clear Button -->
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear"
                     android:layout_width="wrap_content"
@@ -86,7 +90,8 @@
                     android:layout_weight="1"
                     android:layout_marginRight="10dp"/>
 
-                <!-- Borrow Button -->
+                <!-- Search Button -->
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_search_equipment"
                     android:layout_width="wrap_content"
@@ -111,4 +116,25 @@
 
     </LinearLayout>
 
-</LinearLayout>
+    <!-- Full-Screen Loading Overlay -->
+
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_color"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="20dp"
+        android:visibility="visible">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            app:indicatorColor="@color/button_primary"/>
+
+    </FrameLayout>
+
+</FrameLayout>

@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +24,6 @@ import com.example.labmate.activities.ReturnEquipmentActivity;
 import com.example.labmate.states.HomeState;
 import com.example.labmate.viewmodels.HomeViewModel;
 
-
 public class HomeFragment extends Fragment {
 
     private TextView txtName;
@@ -33,7 +34,13 @@ public class HomeFragment extends Fragment {
     private Button buttonManageInventory;
     private Button buttonManageUsers;
     private Button buttonManageRequests;
+
+    private FrameLayout loadingOverlay;
+    private ProgressBar progressBar;
+
     private HomeViewModel homeViewModel;
+
+    private boolean initialLoadCompleted = false;
 
     public HomeFragment() {
     }
@@ -64,61 +71,36 @@ public class HomeFragment extends Fragment {
             View view,
             Bundle savedInstanceState
     ) {
-        super.onViewCreated(
-                view,
-                savedInstanceState
-        );
+        super.onViewCreated(view, savedInstanceState);
 
-        homeViewModel.loadUserData();
+        homeViewModel.loadUserData(true);
     }
 
     private void initializeViews(View view) {
 
-        txtName =
-                view.findViewById(R.id.tvName);
+        txtName = view.findViewById(R.id.tvName);
+        txtRole = view.findViewById(R.id.tvRole);
 
-        txtRole =
-                view.findViewById(R.id.tvRole);
+        buttonBorrow = view.findViewById(R.id.equipment_request);
+        buttonReturn = view.findViewById(R.id.equipment_return);
+        buttonManageInventory = view.findViewById(R.id.manage_inventory);
+        buttonManageUsers = view.findViewById(R.id.manage_users);
+        buttonManageRequests = view.findViewById(R.id.manage_requests);
 
-        buttonBorrow =
-                view.findViewById(
-                        R.id.equipment_request
-                );
+        loadingOverlay = view.findViewById(R.id.loadingOverlay);
+        progressBar = view.findViewById(R.id.progressBar);
 
-        buttonReturn =
-                view.findViewById(
-                        R.id.equipment_return
-                );
-
-        buttonManageInventory =
-                view.findViewById(
-                        R.id.manage_inventory
-                );
-
-        buttonManageUsers =
-                view.findViewById(
-                        R.id.manage_users
-                );
-
-        buttonManageRequests =
-                view.findViewById(
-                        R.id.manage_requests
-                );
-
-        buttonManageInventory.setVisibility(
-                View.GONE
-        );
-
-        buttonManageUsers.setVisibility(
-                View.GONE
-        );
+        // Hide role-dependent buttons
+        // until user data is loaded.
+        buttonManageInventory.setVisibility(View.GONE);
+        buttonManageUsers.setVisibility(View.GONE);
+        buttonReturn.setVisibility(View.GONE);
     }
 
     private void setupViewModel() {
 
-        homeViewModel =
-                new ViewModelProvider(this)
-                        .get(HomeViewModel.class);
+        homeViewModel = new ViewModelProvider(this)
+                .get(HomeViewModel.class);
 
         homeViewModel.getHomeState()
                 .observe(
@@ -131,63 +113,56 @@ public class HomeFragment extends Fragment {
 
         buttonBorrow.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            BorrowEquipmentActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    BorrowEquipmentActivity.class
+            );
 
             startActivity(intent);
         });
 
         buttonReturn.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            ReturnEquipmentActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    ReturnEquipmentActivity.class
+            );
 
             startActivity(intent);
         });
 
         buttonManageInventory.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            ManageInventoryActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    ManageInventoryActivity.class
+            );
 
             startActivity(intent);
         });
 
         buttonManageUsers.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            ManageUserActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    ManageUserActivity.class
+            );
 
             startActivity(intent);
         });
 
         buttonManageRequests.setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            requireContext(),
-                            ManageRequestsActivity.class
-                    );
+            Intent intent = new Intent(
+                    requireContext(),
+                    ManageRequestsActivity.class
+            );
 
             startActivity(intent);
         });
     }
 
-    private void handleHomeState(
-            HomeState state
-    ) {
+    private void handleHomeState(HomeState state) {
 
         if (state == null) {
             return;
@@ -196,14 +171,18 @@ public class HomeFragment extends Fragment {
         switch (state.getStatus()) {
 
             case LOADING:
-                // ProgressBar can be added here later.
+                showLoading();
                 break;
 
             case SUCCESS:
+                hideLoading();
+                initialLoadCompleted = true;
                 displayUserData(state);
                 break;
 
             case ERROR:
+                hideLoading();
+                initialLoadCompleted = true;
                 showError(state.getMessage());
                 break;
 
@@ -213,53 +192,39 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void displayUserData(
-            HomeState state
-    ) {
+    private void showLoading() {
 
-        txtName.setText(
-                state.getName()
-        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.VISIBLE);
+        }
+    }
 
-        txtRole.setText(
-                state.getRole()
-        );
+    private void hideLoading() {
 
-        buttonManageInventory.setVisibility(
-                View.GONE
-        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
+    }
 
-        buttonManageUsers.setVisibility(
-                View.GONE
-        );
+    private void displayUserData(HomeState state) {
 
-        buttonReturn.setVisibility(
-                View.GONE
-        );
+        txtName.setText(state.getName());
+        txtRole.setText(state.getRole());
+
+        buttonManageInventory.setVisibility(View.GONE);
+        buttonManageUsers.setVisibility(View.GONE);
+        buttonReturn.setVisibility(View.GONE);
 
         if (state.isAdmin()) {
 
-            buttonManageInventory.setVisibility(
-                    View.VISIBLE
-            );
-
-            buttonManageUsers.setVisibility(
-                    View.VISIBLE
-            );
-
-            buttonReturn.setVisibility(
-                    View.VISIBLE
-            );
+            buttonManageInventory.setVisibility(View.VISIBLE);
+            buttonManageUsers.setVisibility(View.VISIBLE);
+            buttonReturn.setVisibility(View.VISIBLE);
 
         } else if (state.isStaff()) {
 
-            buttonManageInventory.setVisibility(
-                    View.VISIBLE
-            );
-
-            buttonReturn.setVisibility(
-                    View.VISIBLE
-            );
+            buttonManageInventory.setVisibility(View.VISIBLE);
+            buttonReturn.setVisibility(View.VISIBLE);
         }
     }
 
@@ -282,8 +247,10 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (homeViewModel != null) {
-            homeViewModel.loadUserData();
+        if (homeViewModel != null && initialLoadCompleted) {
+
+            // Silent refresh.
+            homeViewModel.loadUserData(false);
         }
     }
 }

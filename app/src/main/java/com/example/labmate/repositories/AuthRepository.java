@@ -2,6 +2,8 @@ package com.example.labmate.repositories;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 public class AuthRepository {
 
@@ -53,6 +55,25 @@ public class AuthRepository {
             OnFailure onFailure
     ) {
         auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result ->
+                        onSuccess.onSuccess(result.getUser())
+                )
+                .addOnFailureListener(onFailure::onFailure);
+    }
+
+    public void loginWithGoogle(
+            String idToken,
+            OnSuccess onSuccess,
+            OnFailure onFailure
+    ) {
+
+        AuthCredential credential =
+                GoogleAuthProvider.getCredential(
+                        idToken,
+                        null
+                );
+
+        auth.signInWithCredential(credential)
                 .addOnSuccessListener(result ->
                         onSuccess.onSuccess(result.getUser())
                 )

@@ -22,70 +22,38 @@ import com.example.labmate.viewmodels.BorrowingViewModel;
 
 import java.util.ArrayList;
 
-public class BorrowingHistoryActivity
-        extends AppCompatActivity {
+public class BorrowingHistoryActivity extends AppCompatActivity {
 
     private BorrowingViewModel borrowingViewModel;
     private UserSession userSession;
-
     private RecyclerView recyclerBorrowingHistory;
     private TextView tvNoBorrowingHistory;
-
+    private View loadingOverlay;
     private BorrowingAdapter borrowingAdapter;
     private ArrayList<Borrowing> borrowingList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_borrowing_history);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-        setContentView(
-                R.layout.activity_borrowing_history
-        );
+        loadingOverlay = findViewById(R.id.loadingOverlay);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
+        borrowingViewModel = new ViewModelProvider(this).get(BorrowingViewModel.class);
+        userSession = new UserSession(this);
 
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
+        recyclerBorrowingHistory = findViewById(R.id.recyclerBorrowingHistory);
+        tvNoBorrowingHistory = findViewById(R.id.tvNoBorrowingHistory);
 
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
-
-        borrowingViewModel =
-                new ViewModelProvider(this)
-                        .get(BorrowingViewModel.class);
-
-        userSession =
-                new UserSession(this);
-
-        recyclerBorrowingHistory =
-                findViewById(
-                        R.id.recyclerBorrowingHistory
-                );
-
-        tvNoBorrowingHistory =
-                findViewById(
-                        R.id.tvNoBorrowingHistory
-                );
-
-        borrowingList =
-                new ArrayList<>();
+        borrowingList = new ArrayList<>();
 
         observeViewModel();
-
         setupRecyclerView();
-
         loadBorrowingHistory();
     }
 
@@ -96,23 +64,16 @@ public class BorrowingHistoryActivity
     private void observeViewModel() {
 
         borrowingViewModel.getMessage()
-                .observe(
-                        this,
-                        message -> {
+                .observe(this, message -> {
 
-                            if (message == null
-                                    || message.trim().isEmpty()) {
+                    if (message == null || message.trim().isEmpty()) {
+                        return;
+                    }
 
-                                return;
-                            }
+                    hideLoadingOverlay();
 
-                            Toast.makeText(
-                                    this,
-                                    message,
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-                );
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                });
     }
 
     // ============================================================
@@ -121,26 +82,17 @@ public class BorrowingHistoryActivity
 
     private void setupRecyclerView() {
 
-        boolean showUserName =
-                !Constants.ROLE_STUDENT.equalsIgnoreCase(
-                        userSession.getRole()
-                );
+        boolean showUserName = !Constants.ROLE_STUDENT.equalsIgnoreCase(userSession.getRole());
 
-        borrowingAdapter =
-                new BorrowingAdapter(
-                        borrowingList,
-                        false,
-                        showUserName,
-                        null
-                );
-
-        recyclerBorrowingHistory.setLayoutManager(
-                new LinearLayoutManager(this)
+        borrowingAdapter = new BorrowingAdapter(
+                borrowingList,
+                false,
+                showUserName,
+                null
         );
 
-        recyclerBorrowingHistory.setAdapter(
-                borrowingAdapter
-        );
+        recyclerBorrowingHistory.setLayoutManager(new LinearLayoutManager(this));
+        recyclerBorrowingHistory.setAdapter(borrowingAdapter);
     }
 
     // ============================================================
@@ -149,14 +101,12 @@ public class BorrowingHistoryActivity
 
     private void loadBorrowingHistory() {
 
-        String userId =
-                userSession.getUserId();
+        String userId = userSession.getUserId();
+        String role = userSession.getRole();
 
-        String role =
-                userSession.getRole();
+        if (userId == null || userId.trim().isEmpty()) {
 
-        if (userId == null
-                || userId.trim().isEmpty()) {
+            hideLoadingOverlay();
 
             Toast.makeText(
                     this,
@@ -167,8 +117,9 @@ public class BorrowingHistoryActivity
             return;
         }
 
-        if (role == null
-                || role.trim().isEmpty()) {
+        if (role == null || role.trim().isEmpty()) {
+
+            hideLoadingOverlay();
 
             Toast.makeText(
                     this,
@@ -179,6 +130,8 @@ public class BorrowingHistoryActivity
             return;
         }
 
+        showLoadingOverlay();
+
         borrowingViewModel.loadBorrowingHistory(
                 userId,
                 role,
@@ -186,16 +139,13 @@ public class BorrowingHistoryActivity
                 borrowings -> {
 
                     borrowingList.clear();
-
-                    borrowingList.addAll(
-                            borrowings
-                    );
+                    borrowingList.addAll(borrowings);
 
                     borrowingAdapter.notifyDataSetChanged();
 
-                    updateEmptyState(
-                            borrowings
-                    );
+                    updateEmptyState(borrowings);
+
+                    hideLoadingOverlay();
                 }
         );
     }
@@ -204,29 +154,27 @@ public class BorrowingHistoryActivity
     // UPDATE EMPTY STATE
     // ============================================================
 
-    private void updateEmptyState(
-            ArrayList<Borrowing> borrowings
-    ) {
+    private void updateEmptyState(ArrayList<Borrowing> borrowings) {
 
         if (borrowings.isEmpty()) {
 
-            tvNoBorrowingHistory.setVisibility(
-                    View.VISIBLE
-            );
-
-            recyclerBorrowingHistory.setVisibility(
-                    View.GONE
-            );
+            tvNoBorrowingHistory.setVisibility(View.VISIBLE);
+            recyclerBorrowingHistory.setVisibility(View.GONE);
 
         } else {
 
-            tvNoBorrowingHistory.setVisibility(
-                    View.GONE
-            );
-
-            recyclerBorrowingHistory.setVisibility(
-                    View.VISIBLE
-            );
+            tvNoBorrowingHistory.setVisibility(View.GONE);
+            recyclerBorrowingHistory.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void showLoadingOverlay() {
+
+        loadingOverlay.setVisibility(View.VISIBLE);
+    }
+
+    private void hideLoadingOverlay() {
+
+        loadingOverlay.setVisibility(View.GONE);
     }
 }

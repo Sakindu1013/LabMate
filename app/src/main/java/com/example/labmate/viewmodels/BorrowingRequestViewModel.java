@@ -19,19 +19,13 @@ public class BorrowingRequestViewModel extends ViewModel {
     private final EquipmentRepository equipmentRepository;
     private final AuthRepository authRepository;
 
-    private final MutableLiveData<String> message =
-            new MutableLiveData<>();
+    private final MutableLiveData<String> message = new MutableLiveData<>();
 
     public BorrowingRequestViewModel() {
 
-        requestRepository =
-                new BorrowingRequestRepository();
-
-        equipmentRepository =
-                new EquipmentRepository();
-
-        authRepository =
-                new AuthRepository();
+        requestRepository = new BorrowingRequestRepository();
+        equipmentRepository = new EquipmentRepository();
+        authRepository = new AuthRepository();
     }
 
     public LiveData<String> getMessage() {
@@ -53,8 +47,7 @@ public class BorrowingRequestViewModel extends ViewModel {
             return;
         }
 
-        FirebaseUser user =
-                authRepository.getCurrentUser();
+        FirebaseUser user = authRepository.getCurrentUser();
 
         if (user == null) {
 
@@ -65,8 +58,7 @@ public class BorrowingRequestViewModel extends ViewModel {
             return;
         }
 
-        String userId =
-                user.getUid();
+        String userId = user.getUid();
 
         equipmentRepository.findByQrId(
                 qrId.trim(),
@@ -85,8 +77,7 @@ public class BorrowingRequestViewModel extends ViewModel {
                     DocumentSnapshot equipment =
                             snapshot.getDocuments().get(0);
 
-                    String state =
-                            equipment.getString("state");
+                    String state = equipment.getString("state");
 
                     /*
                      * A student can only request equipment

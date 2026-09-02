@@ -2,15 +2,17 @@ package com.example.labmate.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,23 +21,27 @@ import com.example.labmate.activities.AddEquipmentActivity;
 import com.example.labmate.activities.RemoveEquipmentActivity;
 import com.example.labmate.adapters.EquipmentSummaryAdapter;
 import com.example.labmate.models.EquipmentSummary;
+import com.example.labmate.states.EquipmentSummaryState;
 import com.example.labmate.utils.UserSession;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.labmate.viewmodels.EquipmentViewModel;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class EquipmentFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private ArrayList<EquipmentSummary> equipmentSummaryList;
     private EquipmentSummaryAdapter adapter;
-    private FirebaseFirestore db;
 
     private Button buttonAddEquip;
     private Button buttonRemoveEquip;
     private TextView equipmentTotal;
+
+    private FrameLayout loadingOverlay;
+    private CircularProgressIndicator progressBar;
+
+    private EquipmentViewModel equipmentViewModel;
 
     public EquipmentFragment() {
         // Required empty constructor
@@ -46,7 +52,8 @@ public class EquipmentFragment extends Fragment {
     public View onCreateView(
             LayoutInflater inflater,
             ViewGroup container,
-            Bundle savedInstanceState) {
+            Bundle savedInstanceState
+    ) {
 
         View view = inflater.inflate(
                 R.layout.fragment_equipment,
@@ -54,49 +61,46 @@ public class EquipmentFragment extends Fragment {
                 false
         );
 
-        UserSession session = new UserSession(requireContext());
-        boolean isAdmin = session.isAdmin();
+        initializeViews(view);
+        setupRecyclerView();
+        setupViewModel();
+        setupListeners();
 
-        // Buttons
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(
+            View view,
+            Bundle savedInstanceState
+    ) {
+        super.onViewCreated(view, savedInstanceState);
+
+        equipmentViewModel.loadEquipmentSummary();
+    }
+
+    private void initializeViews(View view) {
+
         buttonAddEquip = view.findViewById(R.id.manage_equipment);
         buttonRemoveEquip = view.findViewById(R.id.remove_equipment);
-
-        buttonAddEquip.setVisibility(
-                isAdmin ? View.VISIBLE : View.GONE
-        );
-
-        buttonRemoveEquip.setVisibility(
-                isAdmin ? View.VISIBLE : View.GONE
-        );
-
-        buttonAddEquip.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    requireContext(),
-                    AddEquipmentActivity.class
-            );
-            startActivity(intent);
-        });
-
-        buttonRemoveEquip.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    requireContext(),
-                    RemoveEquipmentActivity.class
-            );
-            startActivity(intent);
-        });
-
-        // Total equipment
         equipmentTotal = view.findViewById(R.id.equipmentTotal);
-
-        // RecyclerView
         recyclerView = view.findViewById(R.id.labRecyclerView);
+        loadingOverlay = view.findViewById(R.id.loadingOverlay);
+        progressBar = view.findViewById(R.id.equipmentProgressBar);
+
+        progressBar.setIndeterminate(true);
+    }
+
+    private void setupRecyclerView() {
+
+        equipmentSummaryList = new ArrayList<>();
+
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(requireContext())
         );
 
-        equipmentSummaryList = new ArrayList<>();
-
-        // null labName = show equipment from all laboratories
+        // null labName = show equipment
+        // from all laboratories.
         adapter = new EquipmentSummaryAdapter(
                 requireContext(),
                 equipmentSummaryList,
@@ -104,105 +108,138 @@ public class EquipmentFragment extends Fragment {
         );
 
         recyclerView.setAdapter(adapter);
-
-        // Firestore
-        db = FirebaseFirestore.getInstance();
-
-        loadEquipmentSummary();
-
-        return view;
     }
 
-    private void loadEquipmentSummary() {
+    private void setupViewModel() {
 
-        db.collection("equipment")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+        equipmentViewModel = new ViewModelProvider(this)
+                .get(EquipmentViewModel.class);
 
-                    equipmentSummaryList.clear();
-
-                    int totalEquipment =
-                            queryDocumentSnapshots.size();
-
-                    equipmentTotal.setText(
-                            "Total Equipment: " + totalEquipment
-                    );
-
-                    HashMap<String, EquipmentSummary> map =
-                            new HashMap<>();
-
-                    for (DocumentSnapshot doc :
-                            queryDocumentSnapshots) {
-
-                        String type = doc.getString("type");
-                        String state = doc.getString("state");
-
-                        if (type == null) {
-                            continue;
-                        }
-
-                        EquipmentSummary summary = map.get(type);
-
-                        if (summary == null) {
-                            summary = new EquipmentSummary(type);
-                            map.put(type, summary);
-                        }
-
-                        summary.increaseTotal();
-
-                        if (state == null) {
-                            continue;
-                        }
-
-                        switch (state) {
-
-                            case "In Lab":
-                                summary.increaseInLab();
-                                break;
-
-                            case "Borrowed":
-                                summary.increaseBorrowed();
-                                break;
-
-                            case "Under Maintenance":
-                                summary.increaseMaintenance();
-                                break;
-
-                            case "Removed":
-                                summary.increaseRemoved();
-                                break;
-
-                            case "Reserved":
-                                summary.increaseReserved();
-                                break;
-                        }
-                    }
-
-                    equipmentSummaryList.addAll(map.values());
-
-                    equipmentSummaryList.sort((a, b) ->
-                            a.getType().compareToIgnoreCase(
-                                    b.getType()
-                            )
-                    );
-
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e ->
-                        Log.e(
-                                "EquipmentFragment",
-                                "Error loading equipment",
-                                e
-                        )
+        equipmentViewModel
+                .getEquipmentSummaryState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        this::handleEquipmentState
                 );
+    }
+
+    private void setupListeners() {
+
+        UserSession session = new UserSession(requireContext());
+
+        boolean isAdmin = session.isAdmin();
+
+        buttonAddEquip.setVisibility(
+                isAdmin
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+
+        buttonRemoveEquip.setVisibility(
+                isAdmin
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+
+        buttonAddEquip.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    requireContext(),
+                    AddEquipmentActivity.class
+            );
+
+            startActivity(intent);
+        });
+
+        buttonRemoveEquip.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    requireContext(),
+                    RemoveEquipmentActivity.class
+            );
+
+            startActivity(intent);
+        });
+    }
+
+    private void handleEquipmentState(EquipmentSummaryState state) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case LOADING:
+                showLoading();
+                break;
+
+            case SUCCESS:
+                hideLoading();
+                displayEquipment(state);
+                break;
+
+            case ERROR:
+                hideLoading();
+                showError(state.getMessage());
+                break;
+
+            case IDLE:
+            default:
+                break;
+        }
+    }
+
+    private void showLoading() {
+
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideLoading() {
+
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
+    }
+
+    private void displayEquipment(EquipmentSummaryState state) {
+
+        equipmentTotal.setText(
+                "Total Equipment: " + state.getTotalEquipment()
+        );
+
+        equipmentSummaryList.clear();
+
+        if (state.getSummaries() != null) {
+            equipmentSummaryList.addAll(state.getSummaries());
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private void showError(String message) {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        Toast.makeText(
+                requireContext(),
+                message != null
+                        ? message
+                        : "Failed to load equipment.",
+                Toast.LENGTH_LONG
+        ).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (db != null) {
-            loadEquipmentSummary();
+        if (equipmentViewModel != null) {
+            equipmentViewModel.loadEquipmentSummary();
         }
     }
 }

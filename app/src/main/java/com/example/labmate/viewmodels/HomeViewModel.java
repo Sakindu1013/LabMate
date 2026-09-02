@@ -43,11 +43,13 @@ public class HomeViewModel extends AndroidViewModel {
         return homeState;
     }
 
-    public void loadUserData() {
+    public void loadUserData(boolean showLoading) {
 
-        homeState.setValue(
-                HomeState.loading()
-        );
+        if (showLoading) {
+            homeState.setValue(
+                    HomeState.loading()
+            );
+        }
 
         FirebaseUser user =
                 authRepository.getCurrentUser();

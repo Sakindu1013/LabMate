@@ -21,8 +21,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-public class ManageRequestsViewModel
-        extends AndroidViewModel {
+public class ManageRequestsViewModel extends AndroidViewModel {
 
     private final BorrowingRequestRepository requestRepository;
     private final EquipmentRepository equipmentRepository;
@@ -30,18 +29,15 @@ public class ManageRequestsViewModel
     private final UserRepository userRepository;
     private final UserSession userSession;
 
-    private final MutableLiveData<ArrayList<BorrowingRequest>>
-            requests =
+    private final MutableLiveData<ArrayList<BorrowingRequest>> requests =
             new MutableLiveData<>(
                     new ArrayList<>()
             );
 
-    private final MutableLiveData<Boolean>
-            loading =
+    private final MutableLiveData<Boolean> loading =
             new MutableLiveData<>(false);
 
-    private final MutableLiveData<String>
-            errorMessage =
+    private final MutableLiveData<String> errorMessage =
             new MutableLiveData<>();
 
     public ManageRequestsViewModel(
@@ -50,28 +46,18 @@ public class ManageRequestsViewModel
 
         super(application);
 
-        requestRepository =
-                new BorrowingRequestRepository();
-
-        equipmentRepository =
-                new EquipmentRepository();
-
-        borrowingRepository =
-                new BorrowingRepository();
-
-        userRepository =
-                new UserRepository();
-
-        userSession =
-                new UserSession(application);
+        requestRepository = new BorrowingRequestRepository();
+        equipmentRepository = new EquipmentRepository();
+        borrowingRepository = new BorrowingRepository();
+        userRepository = new UserRepository();
+        userSession = new UserSession(application);
     }
 
     // ============================================================
     // LIVE DATA
     // ============================================================
 
-    public LiveData<ArrayList<BorrowingRequest>>
-    getRequests() {
+    public LiveData<ArrayList<BorrowingRequest>> getRequests() {
 
         return requests;
     }
@@ -96,14 +82,11 @@ public class ManageRequestsViewModel
 
         errorMessage.setValue(null);
 
-        String userId =
-                userSession.getUserId();
+        String userId = userSession.getUserId();
 
-        String role =
-                userSession.getRole();
+        String role = userSession.getRole();
 
-        if (userId == null
-                || userId.trim().isEmpty()) {
+        if (userId == null || userId.trim().isEmpty()) {
 
             loading.setValue(false);
 
@@ -169,7 +152,6 @@ public class ManageRequestsViewModel
     private void loadAllRequests() {
 
         requestRepository.getAllRequests(
-
                 this::convertRequests,
 
                 e -> {

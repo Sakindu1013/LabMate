@@ -48,24 +48,20 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
     private RecyclerView recyclerBorrowings;
     private BorrowingAdapter borrowingAdapter;
     private ArrayList<Borrowing> borrowingList;
+    private View loadingOverlay;
+    private boolean initialLoad = true;
 
     private final ActivityResultLauncher<Intent> scannerLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
 
-                        if (result.getResultCode() == RESULT_OK
-                                && result.getData() != null) {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
 
-                            String qrId =
-                                    result.getData()
-                                            .getStringExtra("QR_ID");
-
-                            if (qrId != null
-                                    && !qrId.trim().isEmpty()) {
+                            String qrId = result.getData().getStringExtra("QR_ID");
+                            if (qrId != null && !qrId.trim().isEmpty()) {
 
                                 equipmentQR.setText(qrId);
-
                                 loadEquipmentDetails(qrId);
                             }
                         }
@@ -78,77 +74,35 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_borrow_equipment);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                     return insets;
                 }
         );
 
-        borrowingViewModel =
-                new ViewModelProvider(this)
-                        .get(BorrowingViewModel.class);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
+        recyclerBorrowings = findViewById(R.id.recyclerBorrowings);
+        tvNoBorrowings = findViewById(R.id.tvNoBorrowings);
 
-        recyclerBorrowings =
-                findViewById(R.id.recyclerBorrowings);
+        borrowingList = new ArrayList<>();
+        equipmentRepository = new EquipmentRepository();
+        userSession = new UserSession(this);
 
-        tvNoBorrowings =
-                findViewById(R.id.tvNoBorrowings);
+        viewModel = new ViewModelProvider(this).get(EquipmentViewModel.class);
+        borrowingViewModel = new ViewModelProvider(this).get(BorrowingViewModel.class);
+        borrowingRequestViewModel = new ViewModelProvider(this).get(BorrowingRequestViewModel.class);
 
-        borrowingList =
-                new ArrayList<>();
-
-        viewModel =
-                new ViewModelProvider(this)
-                        .get(EquipmentViewModel.class);
-
-        equipmentRepository =
-                new EquipmentRepository();
-
-        userSession =
-                new UserSession(this);
-
-        borrowingRequestViewModel =
-                new ViewModelProvider(this)
-                        .get(BorrowingRequestViewModel.class);
-
-        equipmentQR =
-                findViewById(R.id.equipmentQR);
-
-        borrowEquipment =
-                findViewById(R.id.btn_borrow_equipment);
-
-        borrowHistory =
-                findViewById(R.id.btn_borrow_history);
-
-        btnClear =
-                findViewById(R.id.btn_clear);
-
-        btnQR =
-                findViewById(R.id.btn_scan_qr);
+        equipmentQR = findViewById(R.id.equipmentQR);
+        borrowEquipment = findViewById(R.id.btn_borrow_equipment);
+        borrowHistory = findViewById(R.id.btn_borrow_history);
+        btnClear = findViewById(R.id.btn_clear);
+        btnQR = findViewById(R.id.btn_scan_qr);
 
         observeViewModels();
-
         updateBorrowButton();
-
         setupListeners();
-
-        loadActiveBorrowings();
-
         setupBorrowingsRecyclerView();
+        loadActiveBorrowings(true);
     }
 
     private void observeViewModels() {
@@ -157,20 +111,13 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
         viewModel.getMessage()
                 .observe(this, message -> {
 
-                    if (message == null
-                            || message.trim().isEmpty()) {
+                    if (message == null || message.trim().isEmpty()) {
                         return;
                     }
 
-                    Toast.makeText(
-                            this,
-                            message,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
-                    if (message.equals(
-                            "Equipment Successfully Borrowed")) {
-
+                    if (message.equals("Equipment Successfully Borrowed")) {
                         finish();
                     }
                 });
@@ -179,58 +126,38 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
         borrowingRequestViewModel.getMessage()
                 .observe(this, message -> {
 
-                    if (message == null
-                            || message.trim().isEmpty()) {
+                    if (message == null || message.trim().isEmpty()) {
                         return;
                     }
 
-                    Toast.makeText(
-                            this,
-                            message,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
-                    if (message.equals(
-                            "Borrowing request submitted successfully.")) {
-
+                    if (message.equals("Borrowing request submitted successfully.")) {
                         finish();
                     }
                 });
 
-        borrowingViewModel.getMessage()
-                .observe(this, message -> {
+        borrowingViewModel.getMessage().observe(this, message -> {
 
-                    if (message == null
-                            || message.trim().isEmpty()) {
-                        return;
-                    }
+            if (message == null || message.trim().isEmpty()) {
+                return;
+            }
 
-                    Toast.makeText(
-                            this,
-                            message,
-                            Toast.LENGTH_LONG
-                    ).show();
+            hideLoadingOverlay();
 
-                    if (message.equals(
-                            "Equipment checked out successfully."
-                    )) {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
-                        loadActiveBorrowings();
-                    }
-                });
+            if (message.equals("Equipment checked out successfully.")) {
+                loadActiveBorrowings(true);
+            }
+        });
     }
 
     private void setupListeners() {
 
         // Scan QR code
         btnQR.setOnClickListener(v -> {
-
-            Intent qrIntent =
-                    new Intent(
-                            BorrowEquipmentActivity.this,
-                            QRScannerActivity.class
-                    );
-
+            Intent qrIntent = new Intent(BorrowEquipmentActivity.this, QRScannerActivity.class);
             scannerLauncher.launch(qrIntent);
         });
 
@@ -242,32 +169,15 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
         // Borrow / Request equipment
         borrowEquipment.setOnClickListener(v -> {
 
-            String qrId =
-                    equipmentQR
-                            .getText()
-                            .toString()
-                            .trim();
-
+            String qrId = equipmentQR.getText().toString().trim();
             if (qrId.isEmpty()) {
-
-                equipmentQR.setError(
-                        "Enter Equipment ID"
-                );
-
+                equipmentQR.setError("Enter Equipment ID");
                 return;
             }
 
-            String userId =
-                    userSession.getUserId();
-
+            String userId = userSession.getUserId();
             if (userId.isEmpty()) {
-
-                Toast.makeText(
-                        this,
-                        "User information is missing. Please log in again.",
-                        Toast.LENGTH_LONG
-                ).show();
-
+                Toast.makeText(this, "User information is missing. Please log in again.", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -275,226 +185,151 @@ public class BorrowEquipmentActivity extends AppCompatActivity {
         });
 
         // Clear
-        btnClear.setOnClickListener(v ->
-                equipmentQR.setText("")
-        );
+        btnClear.setOnClickListener(v -> equipmentQR.setText(""));
     }
 
     private void loadEquipmentDetails(String qrId) {
 
-        equipmentRepository.findByQrId(
-                qrId,
+        equipmentRepository.findByQrId(qrId, snapshot -> {
 
-                snapshot -> {
+            if (snapshot.isEmpty()) {
+                Toast.makeText(this, "Equipment Not Found", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-                    if (snapshot.isEmpty()) {
+            DocumentSnapshot doc = snapshot.getDocuments().get(0);
+            String name = doc.getString("equipmentName");
+            String model = doc.getString("equipmentModel");
+            String lab = doc.getString("lab");
+            String state = doc.getString("state");
 
-                        Toast.makeText(
-                                this,
-                                "Equipment Not Found",
-                                Toast.LENGTH_LONG
-                        ).show();
+            String actionText;
 
-                        return;
-                    }
+            if (userSession.canBorrowEquipmentDirectly()) {
+                actionText = "Borrow";
+            } else if (userSession.canRequestEquipment()) {
+                actionText = "Request";
+            } else {
+                actionText = "Unavailable";
+            }
 
-                    DocumentSnapshot doc =
-                            snapshot.getDocuments().get(0);
-
-                    String name =
-                            doc.getString("equipmentName");
-
-                    String model =
-                            doc.getString("equipmentModel");
-
-                    String lab =
-                            doc.getString("lab");
-
-                    String state =
-                            doc.getString("state");
-
-                    String actionText;
-
-                    if (userSession.canBorrowEquipmentDirectly()) {
-
-                        actionText = "Borrow";
-
-                    } else if (userSession.canRequestEquipment()) {
-
-                        actionText = "Request";
-
-                    } else {
-
-                        actionText = "Unavailable";
-                    }
-
-                    EquipmentPreviewDialog.show(
-                            this,
-                            name,
-                            model,
-                            lab,
-                            state,
-                            actionText,
-                            () -> performEquipmentAction(qrId)
-                    );
-                },
-
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
+            EquipmentPreviewDialog.show(this, name, model, lab, state, actionText, () -> performEquipmentAction(qrId));
+            },
+                e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
         );
     }
 
     private void updateBorrowButton() {
 
         if (userSession.canBorrowEquipmentDirectly()) {
-
-            borrowEquipment.setText(
-                    getString(R.string.borrow_equipment)
-            );
-
+            borrowEquipment.setText(getString(R.string.borrow_equipment));
         } else {
-
-            borrowEquipment.setText(
-                    "Request Equipment"
-            );
+            borrowEquipment.setText("Request Equipment");
         }
     }
 
     private void performEquipmentAction(String qrId) {
 
-        String userId =
-                userSession.getUserId();
-
+        String userId = userSession.getUserId();
         if (userId.isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "User information is missing. Please log in again.",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, "User information is missing. Please log in again.", Toast.LENGTH_LONG).show();
             return;
         }
 
         if (userSession.canBorrowEquipmentDirectly()) {
-
-            viewModel.borrowEquipment(
-                    qrId,
-                    userId
-            );
+            viewModel.borrowEquipment(qrId, userId);
 
         } else if (userSession.canRequestEquipment()) {
-
-            borrowingRequestViewModel.requestEquipment(
-                    qrId
-            );
+            borrowingRequestViewModel.requestEquipment(qrId);
 
         } else {
-
-            Toast.makeText(
-                    this,
-                    "You do not have permission to borrow or request equipment.",
-                    Toast.LENGTH_LONG
-            ).show();
+            Toast.makeText(this, "You do not have permission to borrow or request equipment.", Toast.LENGTH_LONG).show();
         }
     }
 
     private void setupBorrowingsRecyclerView() {
 
-        boolean showCheckout =
-                userSession.canBorrowEquipmentDirectly();
+        boolean showCheckout = userSession.canBorrowEquipmentDirectly();
+        boolean showUserName = !Constants.ROLE_STUDENT.equalsIgnoreCase(userSession.getRole());
 
-        boolean showUserName =
-                !Constants.ROLE_STUDENT.equalsIgnoreCase(
-                        userSession.getRole()
-                );
+        borrowingAdapter = new BorrowingAdapter(borrowingList, showCheckout, showUserName, borrowing -> {
 
-        borrowingAdapter =
-                new BorrowingAdapter(
-                        borrowingList,
-                        showCheckout,
-                        showUserName,
+            if (borrowing == null) {
+                return;
+            }
 
-                        borrowing -> {
-
-                            if (borrowing == null) {
-                                return;
-                            }
-
-                            borrowingViewModel.checkout(
-                                    borrowing.getId(),
-                                    borrowing.getEquipmentId()
-                            );
-                        }
-                );
-
-        recyclerBorrowings.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
-
-        recyclerBorrowings.setAdapter(
-                borrowingAdapter
-        );
+            borrowingViewModel.checkout(borrowing.getId(), borrowing.getEquipmentId());
+        });
+        recyclerBorrowings.setLayoutManager(new LinearLayoutManager(this));
+        recyclerBorrowings.setAdapter(borrowingAdapter);
     }
 
-    private void loadActiveBorrowings() {
+    private void loadActiveBorrowings(boolean showLoading) {
 
-        String userId =
-                userSession.getUserId();
+        String userId = userSession.getUserId();
+        String role = userSession.getRole();
 
-        String role =
-                userSession.getRole();
-
-        if (userId == null
-                || userId.trim().isEmpty()) {
-
+        if (userId == null || userId.trim().isEmpty()) {
+            if (showLoading) {
+                hideLoadingOverlay();
+            }
             return;
         }
 
-        if (role == null
-                || role.trim().isEmpty()) {
-
+        if (role == null || role.trim().isEmpty()) {
+            if (showLoading) {
+                hideLoadingOverlay();
+            }
             return;
         }
 
-        borrowingViewModel.loadActiveBorrowings(
-                userId,
-                role,
+        if (showLoading) {
+            showLoadingOverlay();
+        }
 
-                borrowings -> {
+        borrowingViewModel.loadActiveBorrowings(userId, role, borrowings -> {
 
-                    borrowingList.clear();
+            borrowingList.clear();
+            borrowingList.addAll(borrowings);
+            borrowingAdapter.notifyDataSetChanged();
 
-                    borrowingList.addAll(
-                            borrowings
-                    );
+            if (borrowings.isEmpty()) {
+                tvNoBorrowings.setVisibility(View.VISIBLE);
+                recyclerBorrowings.setVisibility(View.GONE);
 
-                    borrowingAdapter.notifyDataSetChanged();
+            } else {
+                tvNoBorrowings.setVisibility(View.GONE);
+                recyclerBorrowings.setVisibility(View.VISIBLE);
+            }
 
-                    if (borrowings.isEmpty()) {
+            if (showLoading) {
+                hideLoadingOverlay();
+            }
+        });
+    }
 
-                        tvNoBorrowings.setVisibility(
-                                View.VISIBLE
-                        );
+    private void showLoadingOverlay() {
 
-                        recyclerBorrowings.setVisibility(
-                                View.GONE
-                        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.VISIBLE);
+        }
+    }
 
-                    } else {
+    private void hideLoadingOverlay() {
 
-                        tvNoBorrowings.setVisibility(
-                                View.GONE
-                        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
+    }
 
-                        recyclerBorrowings.setVisibility(
-                                View.VISIBLE
-                        );
-                    }
-                }
-        );
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!initialLoad) {
+            loadActiveBorrowings(false);
+        }
+
+        initialLoad = false;
     }
 }

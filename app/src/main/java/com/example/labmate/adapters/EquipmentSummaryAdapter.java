@@ -16,8 +16,7 @@ import com.example.labmate.models.EquipmentSummary;
 
 import java.util.ArrayList;
 
-public class EquipmentSummaryAdapter
-        extends RecyclerView.Adapter<EquipmentSummaryAdapter.ViewHolder> {
+public class EquipmentSummaryAdapter extends RecyclerView.Adapter<EquipmentSummaryAdapter.ViewHolder> {
 
     private final Context context;
     private final ArrayList<EquipmentSummary> equipmentList;
@@ -54,8 +53,7 @@ public class EquipmentSummaryAdapter
             @NonNull ViewHolder holder,
             int position) {
 
-        EquipmentSummary equipment =
-                equipmentList.get(position);
+        EquipmentSummary equipment = equipmentList.get(position);
 
         holder.type.setText(equipment.getType());
 
@@ -72,8 +70,7 @@ public class EquipmentSummaryAdapter
         );
 
         holder.maintenance.setText(
-                "Under Maintenance: "
-                        + equipment.getMaintenance()
+                "Under Maintenance: " + equipment.getMaintenance()
         );
 
         holder.removed.setText(
@@ -107,11 +104,11 @@ public class EquipmentSummaryAdapter
 
     @Override
     public int getItemCount() {
+
         return equipmentList.size();
     }
 
-    public static class ViewHolder
-            extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView type;
         TextView total;
@@ -122,6 +119,7 @@ public class EquipmentSummaryAdapter
         TextView reserved;
 
         public ViewHolder(@NonNull View itemView) {
+
             super(itemView);
 
             type = itemView.findViewById(

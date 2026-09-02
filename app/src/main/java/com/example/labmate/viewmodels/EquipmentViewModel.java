@@ -6,33 +6,38 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.labmate.models.Borrowing;
 import com.example.labmate.models.BorrowingRequest;
+import com.example.labmate.models.EquipmentSummary;
 import com.example.labmate.repositories.BorrowingRepository;
 import com.example.labmate.repositories.BorrowingRequestRepository;
 import com.example.labmate.repositories.EquipmentRepository;
+import com.example.labmate.states.EquipmentSummaryState;
 import com.example.labmate.utils.Constants;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 public class EquipmentViewModel extends ViewModel {
 
     private final EquipmentRepository equipmentRepository;
     private final BorrowingRepository borrowingRepository;
     private final BorrowingRequestRepository requestRepository;
+    private boolean firstLoad = true;
 
-    private final MutableLiveData<String> message =
-            new MutableLiveData<>();
+    private final MutableLiveData<String> message = new MutableLiveData<>();
+
+    private final MutableLiveData<EquipmentSummaryState> equipmentSummaryState =
+            new MutableLiveData<>(
+                    EquipmentSummaryState.idle()
+            );
+
+    public LiveData<EquipmentSummaryState> getEquipmentSummaryState() {
+        return equipmentSummaryState;
+    }
 
     public EquipmentViewModel() {
 
-        equipmentRepository =
-                new EquipmentRepository();
-
-        borrowingRepository =
-                new BorrowingRepository();
-
-        requestRepository =
-                new BorrowingRequestRepository();
+        equipmentRepository = new EquipmentRepository();
+        borrowingRepository = new BorrowingRepository();
+        requestRepository = new BorrowingRequestRepository();
     }
 
     public LiveData<String> getMessage() {
@@ -72,8 +77,7 @@ public class EquipmentViewModel extends ViewModel {
                     DocumentSnapshot doc =
                             snapshot.getDocuments().get(0);
 
-                    String state =
-                            doc.getString("state");
+                    String state = doc.getString("state");
 
                     if (Constants.STATE_BORROWED.equals(state)) {
 
@@ -94,11 +98,9 @@ public class EquipmentViewModel extends ViewModel {
                         return;
                     }
 
-                    String equipmentId =
-                            doc.getId();
+                    String equipmentId = doc.getId();
 
-                    Timestamp borrowedAt =
-                            Timestamp.now();
+                    Timestamp borrowedAt = Timestamp.now();
 
                     Timestamp now = Timestamp.now();
 
@@ -143,87 +145,100 @@ public class EquipmentViewModel extends ViewModel {
         );
     }
 
-    /**
-     * Creates a borrowing request.
-     *
-     * Used by students.
-     */
-    public void requestEquipment(
-            String qrId,
-            String userId
-    ) {
+    public void loadEquipmentSummary() {
 
-        if (qrId == null || qrId.trim().isEmpty()) {
-            message.setValue("Equipment ID is missing.");
-            return;
+        if (firstLoad) {
+
+            equipmentSummaryState.setValue(
+                    EquipmentSummaryState.loading()
+            );
+
+            firstLoad = false;
         }
 
-        if (userId == null || userId.trim().isEmpty()) {
-            message.setValue("User information is missing.");
-            return;
-        }
-
-        equipmentRepository.findByQrId(
-                qrId.trim(),
+        equipmentRepository.getAll(
 
                 snapshot -> {
 
-                    if (snapshot.isEmpty()) {
-                        message.setValue("Equipment Not Found");
-                        return;
+                    java.util.List<EquipmentSummary> summaries =
+                            new java.util.ArrayList<>();
+
+                    java.util.Map<String, EquipmentSummary> map =
+                            new java.util.HashMap<>();
+
+                    int totalEquipment = snapshot.size();
+
+                    for (DocumentSnapshot document : snapshot) {
+
+                        String type = document.getString("type");
+
+                        String state = document.getString("state");
+
+                        if (type == null) {
+                            continue;
+                        }
+
+                        EquipmentSummary summary = map.get(type);
+
+                        if (summary == null) {
+
+                            summary = new EquipmentSummary(type);
+
+                            map.put(type, summary);
+                        }
+
+                        summary.increaseTotal();
+
+                        if (state == null) {
+                            continue;
+                        }
+
+                        switch (state) {
+
+                            case Constants.STATE_IN_LAB:
+                                summary.increaseInLab();
+                                break;
+
+                            case Constants.STATE_BORROWED:
+                                summary.increaseBorrowed();
+                                break;
+
+                            case Constants.STATE_MAINTENANCE:
+                                summary.increaseMaintenance();
+                                break;
+
+                            case Constants.STATE_REMOVED:
+                                summary.increaseRemoved();
+                                break;
+
+                            case Constants.STATE_RESERVED:
+                                summary.increaseReserved();
+                                break;
+                        }
                     }
 
-                    DocumentSnapshot doc =
-                            snapshot.getDocuments().get(0);
+                    summaries.addAll(map.values());
 
-                    String state =
-                            doc.getString("state");
+                    summaries.sort(
+                            (a, b) ->
+                                    a.getType()
+                                            .compareToIgnoreCase(
+                                                    b.getType()
+                                            )
+                    );
 
-                    if (Constants.STATE_BORROWED.equals(state)) {
-
-                        message.setValue(
-                                "This equipment is already borrowed."
-                        );
-
-                        return;
-                    }
-
-                    if (Constants.STATE_MAINTENANCE.equals(state)
-                            || Constants.STATE_REMOVED.equals(state)) {
-
-                        message.setValue(
-                                "This equipment cannot be requested."
-                        );
-
-                        return;
-                    }
-
-                    String equipmentId =
-                            doc.getId();
-
-                    BorrowingRequest request =
-                            new BorrowingRequest(
-                                    equipmentId,
-                                    userId,
-                                    Timestamp.now(),
-                                    "Pending"
-                            );
-
-                    requestRepository.add(
-                            request,
-
-                            requestId -> message.setValue(
-                                    "Borrowing request submitted successfully."
-                            ),
-
-                            e -> message.setValue(
-                                    e.getMessage()
+                    equipmentSummaryState.setValue(
+                            EquipmentSummaryState.success(
+                                    summaries,
+                                    totalEquipment
                             )
                     );
                 },
 
-                e -> message.setValue(
-                        e.getMessage()
+                e -> equipmentSummaryState.setValue(
+                        EquipmentSummaryState.error(
+                                "Failed to load equipment."
+                        )
                 )
         );
     }

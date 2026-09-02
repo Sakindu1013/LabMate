@@ -1,155 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/tvDashboardTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/dashboard"
-        android:textColor="@color/text_primary"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+    <!-- Main Content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvDashboardDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/physics_lab_equipment_overview"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvDashboardTitle"/>
+        <!-- Header -->
+        <TextView
+            android:id="@+id/tvDashboardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/dashboard"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-    <!-- User Name -->
-    <TextView
-        android:id="@+id/tvName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/text_primary"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvDashboardDescription"/>
+        <TextView
+            android:id="@+id/tvDashboardDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/physics_lab_equipment_overview"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDashboardTitle"/>
 
-    <!-- User Role -->
-    <TextView
-        android:id="@+id/tvRole"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="4dp"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"
-        android:textStyle="italic"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvName"/>
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDashboardDescription"/>
 
-    <!-- Request Equipment -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/equipment_request"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:backgroundTint="@color/button_primary"
-        android:text="@string/request_equipment"
-        android:textColor="@color/button_text"
-        android:textSize="16sp"
-        app:cornerRadius="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvRole"/>
+        <!-- User Role -->
+        <TextView
+            android:id="@+id/tvRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvName"/>
 
-    <!-- Return Equipment -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/equipment_return"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="20dp"
-        android:backgroundTint="@color/button_secondary"
-        android:text="@string/return_equipment"
-        android:textColor="@color/primary"
-        android:textSize="15sp"
-        app:cornerRadius="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/equipment_request"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1dp"/>
+        <!-- Request Equipment -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/equipment_request"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/button_primary"
+            android:text="@string/request_equipment"
+            android:textColor="@color/button_text"
+            android:textSize="16sp"
+            app:cornerRadius="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvRole"/>
 
-    <!-- Manage Inventory -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/manage_inventory"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="20dp"
-        android:backgroundTint="@color/button_secondary"
-        android:text="@string/inventory_manage"
-        android:textColor="@color/primary"
-        android:textSize="15sp"
-        app:cornerRadius="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/equipment_return"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1dp"/>
+        <!-- Manage Requests -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/manage_requests"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/button_primary"
+            android:text="Borrow Requests"
+            android:textColor="@color/button_text"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/equipment_request"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"/>
 
-    <!-- Manage Users -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/manage_users"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="20dp"
-        android:backgroundTint="@color/button_secondary"
-        android:text="@string/manage_users"
-        android:textColor="@color/primary"
-        android:textSize="15sp"
-        app:cornerRadius="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/manage_inventory"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1dp"/>
+        <!-- Return Equipment -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/equipment_return"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/button_secondary"
+            android:text="@string/return_equipment"
+            android:textColor="@color/primary"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/manage_requests"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"/>
 
-    <!-- Manage Requests -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/manage_requests"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="20dp"
-        android:backgroundTint="@color/button_secondary"
-        android:text="Borrow Requests"
-        android:textColor="@color/primary"
-        android:textSize="15sp"
-        app:cornerRadius="14dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/manage_users"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1dp"/>
+        <!-- Manage Inventory -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/manage_inventory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/button_secondary"
+            android:text="@string/inventory_manage"
+            android:textColor="@color/primary"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/equipment_return"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Manage Users -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/manage_users"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/button_secondary"
+            android:text="@string/manage_users"
+            android:textColor="@color/primary"
+            android:textSize="15sp"
+            app:cornerRadius="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/manage_inventory"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Loading Overlay -->
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_color"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="10dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/primary"/>
+
+    </FrameLayout>
+
+</FrameLayout>

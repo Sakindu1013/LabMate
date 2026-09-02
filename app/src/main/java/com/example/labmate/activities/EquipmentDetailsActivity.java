@@ -1,6 +1,8 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,8 +17,9 @@ import com.example.labmate.R;
 import com.example.labmate.adapters.EquipmentAdapter;
 import com.example.labmate.models.Equipment;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 
 public class EquipmentDetailsActivity extends AppCompatActivity {
@@ -28,55 +31,37 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
     private TextView viewMaintenance;
     private TextView viewRemoved;
     private TextView viewReserved;
-
+    private FrameLayout loadingOverlay;
     private RecyclerView recyclerView;
-
     private ArrayList<Equipment> equipmentList;
     private EquipmentAdapter adapter;
-
     private FirebaseFirestore db;
-
     private String equipmentType;
     private String labName;
+    private boolean initialLoadStarted = false;
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_equipment_details);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         db = FirebaseFirestore.getInstance();
 
-        equipmentType =
-                getIntent().getStringExtra("TYPE");
-
-        labName =
-                getIntent().getStringExtra("LAB_NAME");
+        equipmentType = getIntent().getStringExtra("TYPE");
+        labName = getIntent().getStringExtra("LAB_NAME");
 
         initializeViews();
         initializeRecyclerView();
 
-        loadEquipmentData();
+        initialLoadStarted = true;
+        loadEquipmentData(true);
     }
 
     private void initializeViews() {
@@ -89,11 +74,9 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
         viewRemoved = findViewById(R.id.equipmentRemoved);
         viewReserved = findViewById(R.id.equipmentReserved);
 
-        viewType.setText(
-                equipmentType != null
-                        ? equipmentType
-                        : "Unknown"
-        );
+        loadingOverlay = findViewById(R.id.loadingOverlay);
+
+        viewType.setText(equipmentType != null ? equipmentType : "Unknown");
     }
 
     private void initializeRecyclerView() {
@@ -105,34 +88,36 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
                 equipmentList
         );
 
-        recyclerView = findViewById(
-                R.id.recyclerEquipments
-        );
+        recyclerView = findViewById(R.id.recyclerEquipments);
 
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
-
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
 
-    private void loadEquipmentData() {
+    private void loadEquipmentData(boolean showLoading) {
 
-        if (equipmentType == null || equipmentType.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Equipment type is missing",
-                    Toast.LENGTH_LONG
-            ).show();
+        if (isLoading) {
             return;
         }
 
+        if (equipmentType == null || equipmentType.isEmpty()) {
+
+            hideLoadingOverlay();
+
+            Toast.makeText(this, "Equipment type is missing", Toast.LENGTH_LONG).show();
+
+            return;
+        }
+
+        if (showLoading) {
+            showLoadingOverlay();
+        }
+
+        isLoading = true;
+
         if (labName != null && !labName.isEmpty()) {
-
             loadEquipmentForLab();
-
         } else {
-
             loadAllEquipmentOfType();
         }
     }
@@ -146,14 +131,16 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(snapshot -> {
 
                     processEquipmentData(snapshot);
+
+                    isLoading = false;
+                    hideLoadingOverlay();
                 })
                 .addOnFailureListener(e -> {
 
-                    Toast.makeText(
-                            this,
-                            e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    isLoading = false;
+                    hideLoadingOverlay();
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -165,14 +152,16 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(snapshot -> {
 
                     processEquipmentData(snapshot);
+
+                    isLoading = false;
+                    hideLoadingOverlay();
                 })
                 .addOnFailureListener(e -> {
 
-                    Toast.makeText(
-                            this,
-                            e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    isLoading = false;
+                    hideLoadingOverlay();
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -189,8 +178,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
 
-            Equipment equipment =
-                    doc.toObject(Equipment.class);
+            Equipment equipment = doc.toObject(Equipment.class);
 
             if (equipment == null) {
                 continue;
@@ -246,14 +234,7 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
             return qrA.compareToIgnoreCase(qrB);
         });
 
-        updateSummary(
-                total,
-                inLab,
-                borrowed,
-                maintenance,
-                removed,
-                reserved
-        );
+        updateSummary(total, inLab, borrowed, maintenance, removed, reserved);
 
         adapter.notifyDataSetChanged();
     }
@@ -266,37 +247,35 @@ public class EquipmentDetailsActivity extends AppCompatActivity {
             int removed,
             int reserved) {
 
-        viewTotal.setText(
-                total + " Equipment"
-        );
+        viewTotal.setText(total + " Equipment");
+        viewInLab.setText(String.valueOf(inLab));
+        viewBorrowed.setText(String.valueOf(borrowed));
+        viewMaintenance.setText(String.valueOf(maintenance));
+        viewRemoved.setText(String.valueOf(removed));
+        viewReserved.setText(String.valueOf(reserved));
+    }
 
-        viewInLab.setText(
-                String.valueOf(inLab)
-        );
+    private void showLoadingOverlay() {
 
-        viewBorrowed.setText(
-                String.valueOf(borrowed)
-        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.VISIBLE);
+        }
+    }
 
-        viewMaintenance.setText(
-                String.valueOf(maintenance)
-        );
+    private void hideLoadingOverlay() {
 
-        viewRemoved.setText(
-                String.valueOf(removed)
-        );
-
-        viewReserved.setText(
-                String.valueOf(reserved)
-        );
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(View.GONE);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (db != null && equipmentType != null) {
-            loadEquipmentData();
+
+        if (initialLoadStarted && db != null && equipmentType != null && !isLoading) {
+            loadEquipmentData(false);
         }
     }
 }

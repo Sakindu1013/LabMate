@@ -27,14 +27,13 @@ public class BorrowingRepository {
 
         db.collection("borrowings")
                 .add(borrowing)
-                .addOnSuccessListener(documentReference ->
-                        onSuccess.onSuccess(
-                                documentReference.getId()
-                        )
+                .addOnSuccessListener(
+                        documentReference ->
+                                onSuccess.onSuccess(
+                                        documentReference.getId()
+                                )
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -51,8 +50,7 @@ public class BorrowingRepository {
                 .document(borrowingId)
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -66,19 +64,11 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "equipmentId",
-                        equipmentId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.BORROWING_ACTIVE
-                )
+                .whereEqualTo("equipmentId", equipmentId)
+                .whereEqualTo("status", Constants.BORROWING_ACTIVE)
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -92,23 +82,15 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.BORROWING_ACTIVE
-                )
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("status", Constants.BORROWING_ACTIVE)
                 .orderBy(
                         "createdAt",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -121,15 +103,10 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "status",
-                        Constants.BORROWING_ACTIVE
-                )
+                .whereEqualTo("status", Constants.BORROWING_ACTIVE)
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -143,21 +120,15 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
+                .whereEqualTo("userId", userId)
                 .orderBy(
                         "createdAt",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
-
 
     // ============================================================
     // GET ALL BORROWINGS
@@ -175,9 +146,7 @@ public class BorrowingRepository {
                 )
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -191,19 +160,11 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.BORROWING_BORROWED
-                )
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("status", Constants.BORROWING_BORROWED)
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -217,21 +178,12 @@ public class BorrowingRepository {
     ) {
 
         db.collection("borrowings")
-                .whereEqualTo(
-                        "equipmentId",
-                        equipmentId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.BORROWING_BORROWED
-                )
+                .whereEqualTo("equipmentId", equipmentId)
+                .whereEqualTo("status", Constants.BORROWING_BORROWED)
                 .get()
                 .addOnSuccessListener(onSuccess::onSuccess)
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
-
 
     // ============================================================
     // UPDATE STATUS
@@ -250,9 +202,7 @@ public class BorrowingRepository {
                 .addOnSuccessListener(
                         unused -> onComplete.onComplete()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -285,16 +235,13 @@ public class BorrowingRepository {
                 .update(
                         "status",
                         Constants.BORROWING_BORROWED,
-
                         "borrowedAt",
                         Timestamp.now()
                 )
                 .addOnSuccessListener(
                         unused -> onComplete.onComplete()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ============================================================
@@ -312,15 +259,12 @@ public class BorrowingRepository {
                 .update(
                         "status",
                         Constants.BORROWING_RETURNED,
-
                         "returnedAt",
                         Timestamp.now()
                 )
                 .addOnSuccessListener(
                         unused -> onComplete.onComplete()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 }

@@ -33,8 +33,7 @@ public class LabRepository {
 
                     List<Lab> labs = new ArrayList<>();
 
-                    for (DocumentSnapshot document :
-                            queryDocumentSnapshots) {
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
 
                         Lab lab = new Lab(
                                 document.getId(),
@@ -48,9 +47,7 @@ public class LabRepository {
 
                     onSuccess.onSuccess(labs);
                 })
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ---------------------------------------------------------
@@ -67,28 +64,21 @@ public class LabRepository {
             OnFailure onFailure
     ) {
 
-        Map<String, Object> lab =
-                new HashMap<>();
+        Map<String, Object> lab = new HashMap<>();
 
         lab.put("labName", name);
         lab.put("personInCharge", inCharge);
         lab.put("location", location);
-        lab.put(
-                "createdAt",
-                System.currentTimeMillis()
-        );
+        lab.put("createdAt", System.currentTimeMillis());
         lab.put("createdBy", createdBy);
         lab.put("createdByRole", createdByRole);
 
         db.collection("labs")
                 .add(lab)
                 .addOnSuccessListener(
-                        documentReference ->
-                                onSuccess.onSuccess()
+                        documentReference -> onSuccess.onSuccess()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ---------------------------------------------------------
@@ -125,9 +115,7 @@ public class LabRepository {
                 .addOnSuccessListener(
                         unused -> onSuccess.onSuccess()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ---------------------------------------------------------
@@ -157,9 +145,7 @@ public class LabRepository {
                 .addOnSuccessListener(
                         unused -> onSuccess.onSuccess()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ---------------------------------------------------------
@@ -178,40 +164,26 @@ public class LabRepository {
                 .addOnSuccessListener(
                         queryDocumentSnapshots -> {
 
-                            List<EquipmentSummary> summaries =
-                                    new ArrayList<>();
+                            List<EquipmentSummary> summaries = new ArrayList<>();
+                            Map<String, EquipmentSummary> map = new HashMap<>();
 
-                            Map<String, EquipmentSummary> map =
-                                    new HashMap<>();
+                            int totalEquipment = queryDocumentSnapshots.size();
 
-                            int totalEquipment =
-                                    queryDocumentSnapshots.size();
+                            for (DocumentSnapshot document : queryDocumentSnapshots) {
 
-                            for (DocumentSnapshot document :
-                                    queryDocumentSnapshots) {
-
-                                String type =
-                                        document.getString("type");
-
-                                String state =
-                                        document.getString("state");
+                                String type = document.getString("type");
+                                String state = document.getString("state");
 
                                 if (type == null) {
                                     continue;
                                 }
 
-                                EquipmentSummary summary =
-                                        map.get(type);
+                                EquipmentSummary summary = map.get(type);
 
                                 if (summary == null) {
 
-                                    summary =
-                                            new EquipmentSummary(type);
-
-                                    map.put(
-                                            type,
-                                            summary
-                                    );
+                                    summary = new EquipmentSummary(type);
+                                    map.put(type, summary);
                                 }
 
                                 summary.increaseTotal();
@@ -244,9 +216,7 @@ public class LabRepository {
                                 }
                             }
 
-                            summaries.addAll(
-                                    map.values()
-                            );
+                            summaries.addAll(map.values());
 
                             summaries.sort(
                                     (a, b) ->
@@ -262,9 +232,7 @@ public class LabRepository {
                             );
                         }
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     // ---------------------------------------------------------
@@ -272,6 +240,7 @@ public class LabRepository {
     // ---------------------------------------------------------
 
     public interface OnLabsSuccess {
+
         void onSuccess(List<Lab> labs);
     }
 
@@ -284,10 +253,12 @@ public class LabRepository {
     }
 
     public interface OnSuccess {
+
         void onSuccess();
     }
 
     public interface OnFailure {
+
         void onFailure(Exception e);
     }
 }

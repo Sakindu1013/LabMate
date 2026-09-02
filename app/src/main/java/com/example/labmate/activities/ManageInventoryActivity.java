@@ -1,9 +1,13 @@
 package com.example.labmate.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -34,38 +38,46 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
     private Button searchEquipment;
     private Button btnClear;
+    private Button btnScanQR;
+    private boolean skipNextResumeRefresh = false;
+    private View loadingOverlay;
+    private boolean initialLoadCompleted = false;
+
+    private final ActivityResultLauncher<Intent> scannerLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+
+                            String qrId = result.getData()
+                                    .getStringExtra("QR_ID");
+
+                            if (qrId != null && !qrId.trim().isEmpty()) {
+
+                                equipmentID.setText(qrId);
+
+                                searchEquipment(qrId);
+                            }
+                        }
+                    }
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_manage_inventory);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                findViewById(R.id.main),
-                (v, insets) -> {
-
-                    Insets systemBars =
-                            insets.getInsets(
-                                    WindowInsetsCompat.Type.systemBars()
-                            );
-
-                    v.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            systemBars.bottom
-                    );
-
-                    return insets;
-                }
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         initializeViews();
         initializeRecyclerView();
 
-        equipmentRepository =
-                new EquipmentRepository();
+        equipmentRepository = new EquipmentRepository();
 
         loadAllEquipment();
 
@@ -74,34 +86,25 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
     private void initializeViews() {
 
-        equipmentID =
-                findViewById(R.id.equipmentQR);
-
-        searchEquipment =
-                findViewById(R.id.btn_search_equipment);
-
-        btnClear =
-                findViewById(R.id.btn_clear);
+        equipmentID = findViewById(R.id.equipmentQR);
+        searchEquipment = findViewById(R.id.btn_search_equipment);
+        btnClear = findViewById(R.id.btn_clear);
+        btnScanQR = findViewById(R.id.btn_scan_qr);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
     }
 
     private void initializeRecyclerView() {
 
-        equipmentList =
-                new ArrayList<>();
+        equipmentList = new ArrayList<>();
 
-        adapter =
-                new EquipmentAdapter(
-                        this,
-                        equipmentList
-                );
-
-        recyclerView =
-                findViewById(R.id.recyclerEquipments);
-
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
+        adapter = new EquipmentAdapter(
+                this,
+                equipmentList
         );
 
+        recyclerView = findViewById(R.id.recyclerEquipments);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
 
@@ -109,17 +112,14 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
         searchEquipment.setOnClickListener(v -> {
 
-            String qrId =
-                    equipmentID
-                            .getText()
-                            .toString()
-                            .trim();
+            String qrId = equipmentID
+                    .getText()
+                    .toString()
+                    .trim();
 
             if (qrId.isEmpty()) {
 
-                equipmentID.setError(
-                        "Enter Equipment ID"
-                );
+                equipmentID.setError("Enter Equipment ID");
 
                 return;
             }
@@ -133,6 +133,18 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
             loadAllEquipment();
         });
+
+        btnScanQR.setOnClickListener(v -> {
+
+            skipNextResumeRefresh = true;
+
+            Intent qrIntent = new Intent(
+                    ManageInventoryActivity.this,
+                    QRScannerActivity.class
+            );
+
+            scannerLauncher.launch(qrIntent);
+        });
     }
 
     /**
@@ -142,13 +154,25 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
         equipmentRepository.getAll(
 
-                this::displayEquipment,
+                snapshot -> {
 
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
+                    displayEquipment(snapshot);
+
+                    if (!initialLoadCompleted) {
+                        hideLoadingOverlay();
+                        initialLoadCompleted = true;
+                    }
+                },
+
+                e -> {
+
+                    if (!initialLoadCompleted) {
+                        hideLoadingOverlay();
+                        initialLoadCompleted = true;
+                    }
+
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                }
         );
     }
 
@@ -168,11 +192,7 @@ public class ManageInventoryActivity extends AppCompatActivity {
 
                         adapter.notifyDataSetChanged();
 
-                        Toast.makeText(
-                                this,
-                                "Equipment Not Found",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Equipment Not Found", Toast.LENGTH_LONG).show();
 
                         return;
                     }
@@ -180,11 +200,7 @@ public class ManageInventoryActivity extends AppCompatActivity {
                     displayEquipment(snapshot);
                 },
 
-                e -> Toast.makeText(
-                        this,
-                        e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
+                e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
         );
     }
 
@@ -192,17 +208,13 @@ public class ManageInventoryActivity extends AppCompatActivity {
      * Converts Firestore documents into Equipment objects
      * and displays them in the RecyclerView.
      */
-    private void displayEquipment(
-            QuerySnapshot snapshot
-    ) {
+    private void displayEquipment(QuerySnapshot snapshot) {
 
         equipmentList.clear();
 
-        for (DocumentSnapshot doc :
-                snapshot.getDocuments()) {
+        for (DocumentSnapshot doc : snapshot.getDocuments()) {
 
-            Equipment equipment =
-                    doc.toObject(Equipment.class);
+            Equipment equipment = doc.toObject(Equipment.class);
 
             if (equipment != null) {
                 equipmentList.add(equipment);
@@ -228,9 +240,22 @@ public class ManageInventoryActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    private void showLoadingOverlay() {
+        loadingOverlay.setVisibility(View.VISIBLE);
+    }
+
+    private void hideLoadingOverlay() {
+        loadingOverlay.setVisibility(View.GONE);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (skipNextResumeRefresh) {
+            skipNextResumeRefresh = false;
+            return;
+        }
 
         loadAllEquipment();
     }

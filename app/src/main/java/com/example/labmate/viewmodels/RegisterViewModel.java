@@ -31,6 +31,7 @@ public class RegisterViewModel extends ViewModel {
     }
 
     public LiveData<RegisterState> getRegisterState() {
+
         return registerState;
     }
 
@@ -95,6 +96,7 @@ public class RegisterViewModel extends ViewModel {
     ) {
 
         if (request == null) {
+
             return "Registration information is missing.";
         }
 

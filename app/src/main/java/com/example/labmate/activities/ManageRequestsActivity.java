@@ -1,6 +1,8 @@
 package com.example.labmate.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,8 +20,7 @@ import com.example.labmate.viewmodels.ManageRequestsViewModel;
 
 import java.util.ArrayList;
 
-public class ManageRequestsActivity
-        extends AppCompatActivity {
+public class ManageRequestsActivity extends AppCompatActivity {
 
     private TextView tvRequestsTitle;
     private TextView tvRequestsDescription;
@@ -33,22 +34,18 @@ public class ManageRequestsActivity
     private ArrayList<BorrowingRequest> requestList;
 
     private UserSession userSession;
+    private FrameLayout loadingOverlay;
+    private boolean initialLoadCompleted = false;
+    private boolean showLoadingOverlay = true;
 
     @Override
-    protected void onCreate(
-            Bundle savedInstanceState
-    ) {
-
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(
-                R.layout.activity_manage_requests
-        );
+        setContentView(R.layout.activity_manage_requests);
 
         initializeViews();
 
-        userSession =
-                new UserSession(this);
+        userSession = new UserSession(this);
 
         setupRecyclerView();
 
@@ -61,150 +58,127 @@ public class ManageRequestsActivity
 
     private void initializeViews() {
 
-        tvRequestsTitle =
-                findViewById(
-                        R.id.tvRequestsTitle
-                );
+        tvRequestsTitle = findViewById(R.id.tvRequestsTitle);
+        tvRequestsDescription = findViewById(R.id.tvRequestsDescription);
+        recyclerManageRequests = findViewById(R.id.recycler_manage_requests);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
 
-        tvRequestsDescription =
-                findViewById(
-                        R.id.tvRequestsDescription
-                );
-
-        recyclerManageRequests =
-                findViewById(
-                        R.id.recycler_manage_requests
-                );
-
-        requestList =
-                new ArrayList<>();
+        requestList = new ArrayList<>();
     }
 
     private void setupRecyclerView() {
 
-        boolean isStudent =
-                Constants.ROLE_STUDENT.equalsIgnoreCase(
-                        userSession.getRole()
-                );
+        boolean isStudent = Constants.ROLE_STUDENT.equalsIgnoreCase(
+                userSession.getRole()
+        );
 
         boolean showActions = !isStudent;
 
         boolean showUserName = !isStudent;
 
-        adapter =
-                new BorrowingRequestAdapter(
-                        requestList,
-                        showActions,
-                        showUserName,
+        adapter = new BorrowingRequestAdapter(
+                requestList,
+                showActions,
+                showUserName,
 
-                        new BorrowingRequestAdapter.RequestActionListener() {
+                new BorrowingRequestAdapter.RequestActionListener() {
 
-                            @Override
-                            public void onApprove(
-                                    BorrowingRequest request
-                            ) {
+                    @Override
+                    public void onApprove(BorrowingRequest request) {
 
-                                approveRequest(request);
-                            }
+                        approveRequest(request);
+                    }
 
-                            @Override
-                            public void onReject(
-                                    BorrowingRequest request
-                            ) {
+                    @Override
+                    public void onReject(BorrowingRequest request) {
 
-                                rejectRequest(request);
-                            }
-                        }
-                );
+                        rejectRequest(request);
+                    }
+                }
+        );
 
         recyclerManageRequests.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
-        recyclerManageRequests.setAdapter(
-                adapter
-        );
+        recyclerManageRequests.setAdapter(adapter);
     }
 
     private void setupViewModel() {
 
-        viewModel =
-                new ViewModelProvider(this)
-                        .get(
-                                ManageRequestsViewModel.class
-                        );
+        viewModel = new ViewModelProvider(this)
+                .get(ManageRequestsViewModel.class);
 
-        viewModel.getRequests()
-                .observe(
-                        this,
-                        requests -> {
+        viewModel.getLoading().observe(
+                this,
+                isLoading -> {
 
-                            if (requests == null) {
-                                return;
-                            }
+                    if (isLoading == null) {
+                        return;
+                    }
 
-                            requestList.clear();
+                    if (isLoading) {
 
-                            requestList.addAll(
-                                    requests
-                            );
-
-                            adapter.notifyDataSetChanged();
+                        if (showLoadingOverlay) {
+                            loadingOverlay.setVisibility(View.VISIBLE);
                         }
-                );
 
-        viewModel.getErrorMessage()
-                .observe(
-                        this,
-                        message -> {
+                    } else {
 
-                            if (
-                                    message == null
-                                            || message.trim().isEmpty()
-                            ) {
-                                return;
-                            }
+                        loadingOverlay.setVisibility(View.GONE);
 
-                            Toast.makeText(
-                                    this,
-                                    message,
-                                    Toast.LENGTH_LONG
-                            ).show();
+                        if (!initialLoadCompleted) {
+                            initialLoadCompleted = true;
                         }
-                );
+                    }
+                }
+        );
+
+        viewModel.getRequests().observe(
+                this,
+                requests -> {
+
+                    if (requests == null) {
+                        return;
+                    }
+
+                    requestList.clear();
+
+                    requestList.addAll(requests);
+
+                    adapter.notifyDataSetChanged();
+                }
+        );
+
+        viewModel.getErrorMessage().observe(
+                this,
+                message -> {
+
+                    if (message == null || message.trim().isEmpty()) {
+                        return;
+                    }
+
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                }
+        );
     }
 
     private void displayRoleBasedContent() {
 
-        String role =
-                userSession.getRole();
+        String role = userSession.getRole();
 
-        if (
-                Constants.ROLE_STUDENT.equalsIgnoreCase(
-                        role
-                )
-        ) {
+        if (Constants.ROLE_STUDENT.equalsIgnoreCase(role)) {
 
-            tvRequestsTitle.setText(
-                    "My Borrowing Requests"
-            );
+            tvRequestsTitle.setText("My Borrowing Requests");
 
             tvRequestsDescription.setText(
                     "View your equipment borrowing requests."
             );
 
-        } else if (
-                Constants.ROLE_STAFF.equalsIgnoreCase(
-                        role
-                )
-                        || Constants.ROLE_ADMIN.equalsIgnoreCase(
-                        role
-                )
-        ) {
+        } else if (Constants.ROLE_STAFF.equalsIgnoreCase(role)
+                || Constants.ROLE_ADMIN.equalsIgnoreCase(role)) {
 
-            tvRequestsTitle.setText(
-                    "Manage Borrowing Requests"
-            );
+            tvRequestsTitle.setText("Manage Borrowing Requests");
 
             tvRequestsDescription.setText(
                     "View and manage equipment borrowing requests."
@@ -218,9 +192,10 @@ public class ManageRequestsActivity
             return;
         }
 
-        viewModel.approveRequest(
-                request.getId()
-        );
+        showLoadingOverlay = true;
+        loadingOverlay.setVisibility(View.VISIBLE);
+
+        viewModel.approveRequest(request.getId());
     }
 
     private void rejectRequest(BorrowingRequest request) {
@@ -229,8 +204,20 @@ public class ManageRequestsActivity
             return;
         }
 
-        viewModel.rejectRequest(
-                request.getId()
-        );
+        showLoadingOverlay = true;
+        loadingOverlay.setVisibility(View.VISIBLE);
+
+        viewModel.rejectRequest(request.getId());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (viewModel != null && initialLoadCompleted) {
+
+            showLoadingOverlay = false;
+            viewModel.loadRequests();
+        }
     }
 }

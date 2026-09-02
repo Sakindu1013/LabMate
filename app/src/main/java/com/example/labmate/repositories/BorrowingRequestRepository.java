@@ -24,14 +24,13 @@ public class BorrowingRequestRepository {
 
         db.collection("borrowingRequests")
                 .add(request)
-                .addOnSuccessListener(documentReference ->
-                        onSuccess.onSuccess(
-                                documentReference.getId()
-                        )
+                .addOnSuccessListener(
+                        documentReference ->
+                                onSuccess.onSuccess(
+                                        documentReference.getId()
+                                )
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -43,21 +42,14 @@ public class BorrowingRequestRepository {
     ) {
 
         db.collection("borrowingRequests")
-                .whereEqualTo(
-                        "status",
-                        Constants.REQUEST_PENDING
-                )
+                .whereEqualTo("status", Constants.REQUEST_PENDING)
                 .orderBy(
                         "requestedAt",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
-                .addOnSuccessListener(
-                        onSuccess::onSuccess
-                )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -70,21 +62,14 @@ public class BorrowingRequestRepository {
     ) {
 
         db.collection("borrowingRequests")
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
+                .whereEqualTo("userId", userId)
                 .orderBy(
                         "requestedAt",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
-                .addOnSuccessListener(
-                        onSuccess::onSuccess
-                )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -106,9 +91,7 @@ public class BorrowingRequestRepository {
                 .addOnSuccessListener(
                         unused -> onComplete.onComplete()
                 )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -125,12 +108,8 @@ public class BorrowingRequestRepository {
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
-                .addOnSuccessListener(
-                        onSuccess::onSuccess
-                )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -145,25 +124,12 @@ public class BorrowingRequestRepository {
     ) {
 
         db.collection("borrowingRequests")
-                .whereEqualTo(
-                        "equipmentId",
-                        equipmentId
-                )
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.REQUEST_PENDING
-                )
+                .whereEqualTo("equipmentId", equipmentId)
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("status", Constants.REQUEST_PENDING)
                 .get()
-                .addOnSuccessListener(
-                        onSuccess::onSuccess
-                )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -191,16 +157,12 @@ public class BorrowingRequestRepository {
                             );
 
                     if (request != null) {
-                        request.setId(
-                                document.getId()
-                        );
+                        request.setId(document.getId());
                     }
 
                     onSuccess.onSuccess(request);
                 })
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     public void rejectOtherPendingRequests(
@@ -211,14 +173,8 @@ public class BorrowingRequestRepository {
     ) {
 
         db.collection("borrowingRequests")
-                .whereEqualTo(
-                        "equipmentId",
-                        equipmentId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.REQUEST_PENDING
-                )
+                .whereEqualTo("equipmentId", equipmentId)
+                .whereEqualTo("status", Constants.REQUEST_PENDING)
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
@@ -239,16 +195,12 @@ public class BorrowingRequestRepository {
                     }
 
                     batch.commit()
-                            .addOnSuccessListener(unused ->
-                                    onComplete.onComplete()
+                            .addOnSuccessListener(
+                                    unused -> onComplete.onComplete()
                             )
-                            .addOnFailureListener(
-                                    onFailure::onFailure
-                            );
+                            .addOnFailureListener(onFailure::onFailure);
                 })
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     /**
@@ -261,25 +213,15 @@ public class BorrowingRequestRepository {
     ) {
 
         db.collection("borrowingRequests")
-                .whereEqualTo(
-                        "equipmentId",
-                        equipmentId
-                )
-                .whereEqualTo(
-                        "status",
-                        Constants.REQUEST_PENDING
-                )
+                .whereEqualTo("equipmentId", equipmentId)
+                .whereEqualTo("status", Constants.REQUEST_PENDING)
                 .orderBy(
                         "requestedAt",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                 )
                 .get()
-                .addOnSuccessListener(
-                        onSuccess::onSuccess
-                )
-                .addOnFailureListener(
-                        onFailure::onFailure
-                );
+                .addOnSuccessListener(onSuccess::onSuccess)
+                .addOnFailureListener(onFailure::onFailure);
     }
 
     public interface OnSuccess<T> {

@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
     private AutoCompleteTextView typeDropdown;
     private ArrayList<String> equipmentTypes;
     private ArrayAdapter<String> typeAdapter;
+    private FrameLayout loadingOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         equipmentQR = findViewById(R.id.equipmentQR);
         equipmentIdText = findViewById(R.id.equipmentIdText);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", 0);
         String role = prefs.getString("role", "");
@@ -139,9 +142,12 @@ public class AddEquipmentActivity extends AppCompatActivity {
                 equipment.put("createdByRole", role);
                 equipment.put("qrId", qrId);
 
+                loadingOverlay.setVisibility(View.VISIBLE);
+
                 db.collection("equipment")
                         .add(equipment)
                         .addOnSuccessListener(unused -> {
+                            loadingOverlay.setVisibility(View.GONE);
                             Toast.makeText(getApplicationContext(), "Equipment Added Successfully", Toast.LENGTH_LONG).show();
                             equipmentName.setText("");
                             equipmentModel.setText("");
@@ -151,6 +157,7 @@ public class AddEquipmentActivity extends AppCompatActivity {
                             finish();
                         })
                         .addOnFailureListener(e -> {
+                            loadingOverlay.setVisibility(View.GONE);
                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         });
             }
