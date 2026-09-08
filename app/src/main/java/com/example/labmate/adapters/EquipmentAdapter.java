@@ -28,6 +28,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
     private final Context context;
     private final ArrayList<Equipment> equipmentList;
     private final boolean isAdmin;
+    private final boolean isStaff;
 
     public EquipmentAdapter(
             Context context,
@@ -38,6 +39,7 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
 
         UserSession session = new UserSession(context);
         this.isAdmin = session.isAdmin();
+        this.isStaff = session.isStaff();
     }
 
     @NonNull
@@ -83,9 +85,9 @@ public class EquipmentAdapter extends RecyclerView.Adapter<EquipmentAdapter.Equi
                 "QR ID: " + equipment.getQrId()
         );
 
-        // Only administrators can edit equipment.
+        // Only administrators and staff can edit equipment.
         holder.edit.setVisibility(
-                isAdmin ? View.VISIBLE : View.GONE
+                isAdmin || isStaff ? View.VISIBLE : View.GONE
         );
 
         // Long press → show QR code

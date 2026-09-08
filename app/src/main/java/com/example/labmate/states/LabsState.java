@@ -16,17 +16,20 @@ public class LabsState {
     private final Status status;
     private final List<Lab> labs;
     private final boolean isAdmin;
+    private final boolean isStaff;
     private final String message;
 
     private LabsState(
             Status status,
             List<Lab> labs,
             boolean isAdmin,
+            boolean isStaff,
             String message
     ) {
         this.status = status;
         this.labs = labs;
         this.isAdmin = isAdmin;
+        this.isStaff = isStaff;
         this.message = message;
     }
 
@@ -35,6 +38,7 @@ public class LabsState {
         return new LabsState(
                 Status.IDLE,
                 null,
+                false,
                 false,
                 null
         );
@@ -46,19 +50,22 @@ public class LabsState {
                 Status.LOADING,
                 null,
                 false,
+                false,
                 null
         );
     }
 
     public static LabsState success(
             List<Lab> labs,
-            boolean isAdmin
+            boolean isAdmin,
+            boolean isStaff
     ) {
 
         return new LabsState(
                 Status.SUCCESS,
                 labs,
                 isAdmin,
+                isStaff,
                 null
         );
     }
@@ -70,6 +77,7 @@ public class LabsState {
         return new LabsState(
                 Status.ERROR,
                 null,
+                false,
                 false,
                 message
         );
@@ -85,6 +93,9 @@ public class LabsState {
 
     public boolean isAdmin() {
         return isAdmin;
+    }
+    public boolean isStaff() {
+        return isStaff;
     }
 
     public String getMessage() {

@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "704691074282-vgcjd5cmujs0qnsnqvim8pmtj2e3orj3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.labmate",
+            "certificate_hash": "4d718e316692eb777b5c48462d75576a227ee650"
+          }
+        },
+        {
           "client_id": "704691074282-0o8j59kt4s1q28o2uv1360hj17ghidmm.apps.googleusercontent.com",
           "client_type": 3
         }

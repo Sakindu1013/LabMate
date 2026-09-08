@@ -29,8 +29,7 @@ public class LabsViewModel extends AndroidViewModel {
 
         labRepository = new LabRepository();
 
-        userSession =
-                new UserSession(application);
+        userSession = new UserSession(application);
     }
 
     public LiveData<LabsState> getLabsState() {
@@ -43,8 +42,8 @@ public class LabsViewModel extends AndroidViewModel {
                 LabsState.loading()
         );
 
-        boolean isAdmin =
-                userSession.isAdmin();
+        boolean isAdmin = userSession.isAdmin();
+        boolean isStaff = userSession.isStaff();
 
         labRepository.getLabs(
 
@@ -62,7 +61,8 @@ public class LabsViewModel extends AndroidViewModel {
                     labsState.setValue(
                             LabsState.success(
                                     labs,
-                                    isAdmin
+                                    isAdmin,
+                                    isStaff
                             )
                     );
                 },

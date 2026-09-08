@@ -89,6 +89,7 @@ public class LabsFragment extends Fragment {
         adapter = new LabAdapter(
                 requireContext(),
                 labList,
+                false,
                 false
         );
 
@@ -157,16 +158,18 @@ public class LabsFragment extends Fragment {
         loadingOverlay.setVisibility(View.GONE);
 
         boolean isAdmin = state.isAdmin();
+        boolean isStaff = state.isStaff();
 
         // Show/hide Add Lab button.
         buttonAddLab.setVisibility(
-                isAdmin
+                isAdmin || isStaff
                         ? View.VISIBLE
                         : View.GONE
         );
 
         // Update adapter permission.
         adapter.setAdmin(isAdmin);
+        adapter.setStaff(isStaff);
 
         // Update list.
         labList.clear();

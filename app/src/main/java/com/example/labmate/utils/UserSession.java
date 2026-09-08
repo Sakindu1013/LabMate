@@ -60,6 +60,12 @@ public class UserSession {
         );
     }
 
+    public boolean isStaff() {
+        return Constants.ROLE_STAFF.equalsIgnoreCase(
+                getRole()
+        );
+    }
+
     public boolean canManageInventory() {
 
         String role = getRole();

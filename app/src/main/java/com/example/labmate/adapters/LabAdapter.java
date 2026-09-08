@@ -23,11 +23,13 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
     private Context context;
     private ArrayList<Lab> labs;
     private boolean isAdmin;
+    private boolean isStaff;
 
-    public LabAdapter(Context context, ArrayList<Lab> labs, boolean isAdmin){
+    public LabAdapter(Context context, ArrayList<Lab> labs, boolean isAdmin, boolean isStaff){
         this.context = context;
         this.labs = labs;
         this.isAdmin = isAdmin;
+        this.isStaff = isStaff;
     }
 
     @NonNull
@@ -45,7 +47,7 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
         holder.inCharge.setText("In Charge: " + lab.getInCharge());
         holder.location.setText("Location: " + lab.getLocation());
 
-        holder.edit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        holder.edit.setVisibility(isAdmin || isStaff ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> {
             Intent labIntent = new Intent(context, LabDetailsActivity.class);
@@ -89,6 +91,11 @@ public class LabAdapter extends RecyclerView.Adapter<LabAdapter.ViewHolder>{
 
     public void setAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
+        notifyDataSetChanged();
+    }
+
+    public void setStaff(boolean isStaff) {
+        this.isStaff = isStaff;
         notifyDataSetChanged();
     }
 }
